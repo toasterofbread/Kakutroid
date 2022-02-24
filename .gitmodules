@@ -1,0 +1,3 @@
+[submodule "addons/Godot-Utilities"]
+	path = addons/Godot-Utilities
+	url = https://github.com/spectreseven1138/godot-utilities

@@ -1,0 +1,124 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://src/scenes/player/Player.gd" type="Script" id=1]
+[ext_resource path="res://assets/sprites/player/player.png" type="Texture" id=2]
+[ext_resource path="res://src/scenes/framework/sprite_trail_emitter/SpriteTrailEmitter.tscn" type="PackedScene" id=3]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 2 ) ],
+"loop": true,
+"name": "default",
+"speed": 5.0
+} ]
+
+[sub_resource type="Gradient" id=2]
+offsets = PoolRealArray( 0.0042735, 1 )
+colors = PoolColorArray( 0.999634, 0.953125, 1, 1, 0.995575, 0.433594, 1, 1 )
+
+[sub_resource type="GradientTexture" id=3]
+gradient = SubResource( 2 )
+width = 16
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 8, 8 )
+
+[sub_resource type="Gradient" id=5]
+offsets = PoolRealArray( 0, 0.724138, 1 )
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0 )
+
+[sub_resource type="Animation" id=6]
+resource_name = "wall_squeeze_-1"
+length = 0.2
+step = 0.01
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:squeeze_amount_x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 0.287175, 0.287175, 0.287175 ),
+"update": 0,
+"values": [ 0.0, -0.25, 0.0 ]
+}
+
+[sub_resource type="Animation" id=7]
+resource_name = "wall_squeeze_1"
+length = 0.2
+step = 0.01
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:squeeze_amount_x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 0.287175, 0.307786, 0.287175 ),
+"update": 0,
+"values": [ 0.0, 0.25, 0.0 ]
+}
+
+[node name="Player" type="KinematicBody2D"]
+collision_layer = 2
+script = ExtResource( 1 )
+squeeze_amount_x = -0.25
+
+[node name="MainSprite" type="AnimatedSprite" parent="."]
+frames = SubResource( 1 )
+
+[node name="TextureRect" type="TextureRect" parent="MainSprite"]
+margin_left = 8.0
+margin_top = -8.0
+margin_right = 2056.0
+margin_bottom = 8.0
+rect_rotation = 90.0
+rect_scale = Vector2( 1, 16 )
+texture = SubResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+zoom = Vector2( 0.35, 0.35 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
+shape = SubResource( 4 )
+
+[node name="SpriteTrailEmitter" parent="." instance=ExtResource( 3 )]
+profiles = {
+"default": {
+"fade_out": true,
+"frequency": 100,
+"linger_time": 0.07,
+"material": null,
+"modulate": Color( 1, 1, 1, 0.462745 )
+}
+}
+sprites = [ NodePath("../MainSprite") ]
+
+[node name="CrouchTween" type="Tween" parent="."]
+
+[node name="LandingParticles" type="CPUParticles2D" parent="."]
+position = Vector2( 0, 8 )
+rotation = 1.5708
+scale = Vector2( 0.15, 3 )
+emitting = false
+amount = 4
+one_shot = true
+speed_scale = 2.0
+explosiveness = 1.0
+texture = SubResource( 3 )
+direction = Vector2( -1, 0 )
+spread = 5.37
+gravity = Vector2( 980, 0 )
+initial_velocity = 335.82
+color_ramp = SubResource( 5 )
+
+[node name="WallSqueezeAnimationPlayer" type="AnimationPlayer" parent="."]
+anims/wall_squeeze_-1 = SubResource( 6 )
+anims/wall_squeeze_1 = SubResource( 7 )
