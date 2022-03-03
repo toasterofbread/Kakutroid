@@ -1,0 +1,43 @@
+{
+    "general": {
+        "GRAVITY": 1000.0,
+        "GRAVITY_WALL": 1000.0,
+        "MAX_FALL_SPEED": 300.0,
+        "MAX_FALL_SPEED_WALL": 100.0,
+        "COYOTE_TIME": 0.1,
+        "RUN_TRIGGER_WINDOW": 0.2
+    },
+    "neutral": {
+        "PASSIVE_DECELERATION": 1000.0
+    },
+    "walk": {
+        "ACCELERATION": 500.0,
+        "MAX_SPEED": 150.0,
+        "DECELERATION": 1000.0
+    },
+    "run": {
+        "ACCELERATION": 500.0,
+        "MAX_SPEED": 300.0,
+        "DECELERATION": 1500.0
+    },
+    "slide": {
+        "PASSIVE_DECELERATION": 100.0,
+        "DASH_SPEED": 400.0
+    },
+    "jump": {
+        "JUMP_MAX_DURATION": 0.25,
+        "JUMP_MIN_DURATION": 0.1,
+        "JUMP_ACCELERATION": 2000.0,
+        "JUMP_ACCELERATION_WALL": 1700.0,
+        "JUMP_ACCELERATION_BOOST": 500.0,
+        "FAST_FALL_ACCELERATION": 3000.0,
+        "FAST_FALL_MAX_SPEED": 500.0,
+
+        "WALLJUMP_BOOST_Y": 0.0,
+        "WALLJUMP_BOOST_Y_FAST": 200.0,
+        "WALLJUMP_BOOST_X": 200.0,
+        "WALLJUMP_BOOST_X_FAST": 300.0,
+
+        "RUN_DISABLE_TIME": 0.25
+    }
+}

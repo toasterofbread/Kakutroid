@@ -16,11 +16,12 @@ export var profiles: Dictionary = {
 var current_profile = "default" setget set_current_profile
 var current_profile_data = null
 export(Array, NodePath) var sprites: = []
+var sprite_nodes: Array = []
 export var emitting: bool = true
 export var trailsprite_scale_override: Vector2 = Vector2.ZERO
 var emission_timer: float = 0.0
 
-onready var trail_anchor: Node2D = Utils.get_unique_anchor()
+onready var trail_anchor: Node = Utils.get_unique_anchor()
 
 func _process(delta: float):
 	
@@ -28,10 +29,14 @@ func _process(delta: float):
 		emission_timer = 0.0
 		return
 	
-	emission_timer += delta
-	if emission_timer >= 1.0 / current_profile_data["frequency"]:
+	if current_profile_data["frequency"] < 0:
 		emit_trail()
-		emission_timer = 0.0
+	else:
+		emission_timer += delta
+		if emission_timer >= 1.0 / current_profile_data["frequency"]:
+			emit_trail()
+			emission_timer = 0.0
+	
 
 func set_current_profile(value, force_update:=false):
 	
@@ -59,32 +64,38 @@ func _ready():
 	
 	remove_child(TrailSpriteTemplate)
 	TrailSpriteTemplate.get_node("DeletionTimer").autostart = true
-	trail_anchor.z_as_relative = false
 	
-	var spritepaths = sprites.duplicate()
-	sprites.clear()
-	for spritepath in spritepaths:
+#	var spritepaths = sprites.duplicate()
+#	sprites.clear()
+	for spritepath in sprites:
 		var sprite = get_node_or_null(spritepath)
 		if sprite != null:
-			sprites.append(sprite)
+			sprite_nodes.append(sprite)
 	
 	set_current_profile(current_profile, true)
 
+func _notification(what: int):
+	if what == NOTIFICATION_PREDELETE and is_instance_valid(trail_anchor):
+		trail_anchor.queue_free()
 
 func clear_trail():
 	for node in trail_anchor.get_children():
 		node.queue_free()
 
 func emit_trail():
-	for sprite in sprites:
+	for sprite in sprite_nodes:
 		if not sprite.visible or (sprite.has_meta("no_trail") and sprite.get_meta("no_trail")):
 			continue
 		
 		var SpriteContainer: Node2D = TrailSpriteTemplate.duplicate()
 		var TrailSprite: Node2D = sprite.duplicate()# if current_profile_data["sprite"] == null else Sprite.new()
+		TrailSprite.z_as_relative = false
+		TrailSprite.z_index = z_index
 		if trailsprite_scale_override != Vector2.ZERO:
 			TrailSprite.scale = trailsprite_scale_override
 #		Enums.set_node_layer(TrailSprite, trail_layer)
+		if get_parent() is Node2D:
+			TrailSprite.rotation = get_parent().rotation
 		SpriteContainer.add_child(TrailSprite)
 		
 		trail_anchor.add_child(SpriteContainer)

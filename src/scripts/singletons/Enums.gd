@@ -8,6 +8,11 @@ enum PLAYER_STATE {
 	JUMP,
 	SLIDE
 }
+enum SHAPE {
+	SQUARE,
+	CIRCLE,
+	TRIANGLE
+}
 
 enum DIRECTION {
 	LEFT,
@@ -15,4 +20,8 @@ enum DIRECTION {
 	UP,
 	DOWN,
 	NONE
+}
+
+enum UPGRADE {
+	WALLJUMP
 }

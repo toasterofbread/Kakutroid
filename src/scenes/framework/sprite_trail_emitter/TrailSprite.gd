@@ -7,7 +7,7 @@ func init(_sprite: Node2D, _follow: Node2D, data: Dictionary):
 	sprite = _sprite
 	if sprite is AnimatedSprite:
 		sprite.playing = false
-	elif data["sprite"] != null:
+	elif "sprite" in data and data["sprite"] != null:
 		sprite.texture = data["sprite"]
 	
 	var _modulate = data["modulate"]
@@ -26,9 +26,7 @@ func init(_sprite: Node2D, _follow: Node2D, data: Dictionary):
 	follow = _follow
 
 func _physics_process(delta):
-
 	sprite.global_position = lerp(sprite.global_position, follow.global_position, delta)
-	
 
 func _on_DeletionTimer_timeout():
 	queue_free()

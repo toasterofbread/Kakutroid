@@ -2,39 +2,52 @@ extends KinematicBody2D
 class_name Player
 
 # - Signals -
-signal STATE_CHANGED(Node, Node) # (previous_state: PlayerState, current_state: PlayerState)
+signal STATE_CHANGED(previous_state)
+signal PHYSICS_DATA_CHANGED() # TODO
 
-# - Physics values -
-const GRAVITY: float = 1000.0
-const MAX_FALL_SPEED: float = 300.0
-const PARTICLE_EMISSION_SPEED_MIN: float = 200.0
-var velocity: Vector2 = Vector2.ZERO
-var acceleration: Vector2 = Vector2.ZERO # Read-only
+# - Data -
+var physics_data: Dictionary = Utils.load_json("res://data/player_physics/default.json")
+var general_physics_data: Dictionary = physics_data["general"]
 
-# - States -
+# - State -
 var states: Dictionary = {}
 var current_state: Node = null
+var facing: int = 1
+var velocity: Vector2 = Vector2.ZERO
+var air_time: float = -1.0
+
+# - Shape -
+const SHAPE_TRANSITION_DURATION: float = 0.5
+onready var shape_data: Dictionary = {
+	Enums.SHAPE.SQUARE: {"node": $Shapes/Square},
+	Enums.SHAPE.TRIANGLE: {"node": $Shapes/Triangle},
+	Enums.SHAPE.CIRCLE: {"node": $Shapes/Circle},
+}
+var current_shape: int = null setget set_current_shape
+var current_shape_node: Node2D = null
 
 # - Nodes -
-onready var main_sprite: AnimatedSprite = $MainSprite
 onready var crouch_tween: Tween = $CrouchTween
+onready var shape_transition_tween: Tween = $ShapeTransitionTween
 onready var wall_squeeze_animationplayer: AnimationPlayer = $WallSqueezeAnimationPlayer
 onready var trail_emitter: SpriteTrailEmitter = $SpriteTrailEmitter
 onready var landing_particles: CPUParticles2D = $LandingParticles
 
+# - Scenes -
+const projectile_scene: PackedScene = preload("res://src/scenes/player/Projectile.tscn")
+
 # - Other -
-#const MAX_STRETCH: float = 5.0
-#const STRETCH_ACCELERATION_MODIFIER: float = 10.0
-#const MAX_STRETCH_VELOCITY: float = 1000.0
-#var velocity_sign: Vector2 = Vector2.ZERO
 const CUBE_SIZE: int = 16
 const WALL_SQUEEZE_AMOUNT: float = 0.25
 const CROUCH_SQUEEZE_AMOUNT: float = 0.25
+const CUBE_TEXTURE: Texture = preload("res://assets/temp/white.png")
 var crouching: bool = false setget set_crouching
+var running: bool = false
 export var squeeze_amount_x: float = 0.0 setget set_squeeze_amount_x
 var squeeze_amount_y: float = 0.0 setget set_squeeze_amount_y
 
 var previous_velocity: Vector2 = Vector2.ZERO
+var was_on_floor: bool = false
 
 func _ready():
 	var all_states: Array = [
@@ -53,45 +66,93 @@ func _ready():
 	squeeze_amount_y = 0
 	
 	change_state(Enums.PLAYER_STATE.NEUTRAL)
+	set_current_shape(Enums.SHAPE.SQUARE, true)
 
 func _process(delta):
+	
+	if Input.is_action_just_pressed("run"):
+		running = true
+	
 	if current_state != null:
 		current_state.process(delta)
 	
 	Overlay.SET("Velocity", velocity)
 	Overlay.SET("State", Enums.PLAYER_STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
+	Overlay.SET("Running", running)
 	
-	main_sprite.scale.x = 1.0 - abs(squeeze_amount_x)
-	main_sprite.position.x = (CUBE_SIZE / -2) * (main_sprite.scale.x - 1) * sign(squeeze_amount_x)
-	main_sprite.scale.y = 1.0 - abs(squeeze_amount_y)
-	main_sprite.position.y = (CUBE_SIZE / -2) * (main_sprite.scale.y - 1) * sign(squeeze_amount_y)
+	current_shape_node.scale.x = 1.0 - abs(squeeze_amount_x)
+	current_shape_node.position.x = (CUBE_SIZE / -2) * (current_shape_node.scale.x - 1) * sign(squeeze_amount_x)
+	current_shape_node.scale.y = 1.0 - abs(squeeze_amount_y)
+	current_shape_node.position.y = (CUBE_SIZE / -2) * (current_shape_node.scale.y - 1) * sign(squeeze_amount_y)
 	previous_velocity = velocity
+	
+	var pad_x: int = InputManager.get_pad_x()
+	if pad_x != 0:
+		facing = pad_x
+	
+	if Input.is_action_just_pressed("fire_weapon"):
+		fire_weapon()
+	else:
+		if  Input.is_action_just_pressed("fire_weapon_left"):
+			fire_weapon(-1)
+		if Input.is_action_just_pressed("fire_weapon_right"):
+			fire_weapon(1)
+	
+	if Input.is_action_just_pressed("cycle_shape"):
+		set_current_shape(Enums.SHAPE.CIRCLE)
 
 func _physics_process(delta: float):
+	
 	if current_state != null:
 		current_state.physics_process(delta)
 	
-	if velocity.y < MAX_FALL_SPEED:
-		vel_move_y(MAX_FALL_SPEED, GRAVITY * delta)
+	if is_on_wall():
+		vel_move_y(general_physics_data["MAX_FALL_SPEED_WALL"], general_physics_data["GRAVITY_WALL"] * delta)
+	elif velocity.y < general_physics_data["MAX_FALL_SPEED"]:
+		vel_move_y(general_physics_data["MAX_FALL_SPEED"], general_physics_data["GRAVITY"] * delta)
 	
 	velocity = move_and_slide(velocity, Vector2.UP)
+	# Emit landing particles
+	if get_slide_count() > 0 and is_on_floor() and not was_on_floor and previous_velocity.y >= 200.0:
+		
+		# Find collided object
+		for collision_idx in get_slide_count():
+			var collision: KinematicCollision2D = get_slide_collision(collision_idx)
+			if not collision.collider is RoomCollisionObject:
+				continue
+			var collider: RoomCollisionObject = collision.collider
+			
+#			# Find collided tile
+#			var pos: Vector2 = tilemap.world_to_map(tilemap.to_local(collision.position))# - Vector2(1, 0)
+#			var tile: int = tilemap.get_cellv(pos)
+#			if tile == -1:
+#				tile = tilemap.get_cellv(pos - Vector2(1, 0))
+#				if tile == -1:
+#					continue
+			
+			# Emit particles with texture and colour of tile
+			emit_landing_particles(collider.particle_texture).color = collider.particle_colour
+			break
+	
+	if is_on_floor():
+		air_time = -1.0
+	elif was_on_floor:
+		air_time = 0.0
+	else:
+		air_time += delta
 	
 	Overlay.SET("On floor", is_on_floor())
 	Overlay.SET("On wall", is_on_wall())
+	Overlay.SET("Air time", air_time)
 	
-#	if not previous_is_on_wall and is_on_wall() and abs(velocity.x) >= PARTICLE_EMISSION_SPEED_MIN:
-#		emit_landing_particles(5)
-#
-#	squeeze_amount_x = lerp(squeeze_amount_x, (WALL_SQUEEZE_AMOUNT * InputManager.get_pad_x()) if is_on_wall() else 0.0, delta * 50)
-#
-#	previous_is_on_wall = is_on_wall()
+	was_on_floor = is_on_floor()
 
 func change_state(state_id: int, data: Dictionary = {}):
 	
 	if current_state == null:
 		current_state = states[state_id]
 		current_state.on_enabled(null, data)
-		emit_signal("STATE_CHANGED", null, current_state)
+		emit_signal("STATE_CHANGED", null)
 	elif current_state.get_id() != state_id:
 		var previous_state: PlayerState = current_state
 		previous_state.on_disabled(states[state_id])
@@ -99,7 +160,45 @@ func change_state(state_id: int, data: Dictionary = {}):
 		current_state = states[state_id]
 		current_state.on_enabled(previous_state, data)
 		
-		emit_signal("STATE_CHANGED", previous_state, current_state)
+		emit_signal("STATE_CHANGED", previous_state)
+
+func set_current_shape(value: int, instant: bool = false):
+	if value == current_shape:
+		return
+	
+	current_shape = value
+	shape_transition_tween.stop_all()
+	
+	if instant:
+		var position: Vector2
+		if current_shape_node:
+			position = current_shape_node.global_position
+			current_shape_node.modulate.a = 1
+			Utils.reparent_node(current_shape_node, $Shapes)
+		else:
+			position = global_position
+		current_shape_node = shape_data[current_shape]["node"]
+		current_shape_node.visible = true
+		Utils.reparent_node(current_shape_node, self)
+		current_shape_node.global_position = position
+		trail_emitter.sprite_nodes.clear()
+		trail_emitter.sprite_nodes.append(current_shape_node)
+	else:
+		shape_transition_tween.interpolate_property(current_shape_node, "modulate:a", current_shape_node.modulate.a, 0.0, SHAPE_TRANSITION_DURATION / 2.0, Tween.TRANS_EXPO)
+		shape_transition_tween.start()
+		yield(shape_transition_tween, "tween_all_completed")
+		var position: Vector2 = current_shape_node.global_position if current_shape_node != null else global_position
+		Utils.reparent_node(current_shape_node, $Shapes)
+		current_shape_node = shape_data[current_shape]["node"]
+		current_shape_node.modulate.a = 0.0
+		current_shape_node.visible = true
+		Utils.reparent_node(current_shape_node, self)
+		current_shape_node.global_position = position
+		trail_emitter.sprite_nodes.clear()
+		trail_emitter.sprite_nodes.append(current_shape_node)
+		shape_transition_tween.interpolate_property(current_shape_node, "modulate:a", current_shape_node.modulate.a, 1.0, SHAPE_TRANSITION_DURATION / 2.0, Tween.TRANS_EXPO)
+		shape_transition_tween.start()
+		yield(shape_transition_tween, "tween_all_completed")
 
 func set_crouching(value: bool):
 	if value == crouching:
@@ -116,10 +215,19 @@ func wall_collided(direction: int, strong: bool = false):
 	if wall_squeeze_animationplayer.is_playing():
 		return
 	
-	if strong:
-		emit_landing_particles(5)
+	# TODO
+#	if strong:
+#		emit_landing_particles(5)
 	
 	wall_squeeze_animationplayer.play("wall_squeeze_" + str(direction))
+
+func fire_weapon(direction: int = facing):
+	assert(direction in [-1, 1])
+	
+	var projectile: Node2D = projectile_scene.instance()
+	projectile.init(direction, current_shape, Color("fe6fff"))
+	Utils.anchor.add_child(projectile)
+	projectile.global_position = current_shape_node.global_position
 
 func is_squeezing_wall() -> bool:
 	return squeeze_amount_x != 0
@@ -130,41 +238,40 @@ func set_squeeze_amount_x(value: float):
 func set_squeeze_amount_y(value: float):
 	squeeze_amount_y = max(-1.0, min(1.0, value))
 
-func vel_move_y(to: float, by: float = INF, virtual: bool = false):
-	if virtual:
-		velocity.y = move_toward(velocity.y, to, by)
-		return
-	var initial_y: float = velocity.y
+func vel_move_y(to: float, by: float = INF):
 	velocity.y = move_toward(velocity.y, to, by)
-#	acceleration.y = lerp(acceleration.y, acceleration.y + velocity.y - initial_y, 0.1)
-#	acceleration.y += velocity.y - initial_y
-#	disable_floor_snap = true
 
-func vel_move_x(to: float, by: float = INF, virtual: bool = false):
-	if virtual:
-		velocity.x = move_toward(velocity.x, to, by)
-		return
-	var initial_x: float = velocity.x
+func vel_move_x(to: float, by: float = INF):
 	velocity.x = move_toward(velocity.x, to, by)
-#	acceleration.x = lerp(acceleration.x, acceleration.x + velocity.x - initial_x, 1)
-#	acceleration.x += velocity.x - initial_x
 
-func vel_move(to: Vector2, delta: float = INF, virtual: bool = false):
-	if virtual:
-		velocity = velocity.move_toward(to, delta)
-		return
-	var initial: Vector2 = velocity
+func vel_move(to: Vector2, delta: float = INF):
 	velocity = velocity.move_toward(to, delta)
-	acceleration += velocity - initial
 
-func emit_landing_particles(amount: int = 2):
+func emit_landing_particles(texture_or_colour, amount: int = 3) -> CPUParticles2D:
+	assert(texture_or_colour is Color or texture_or_colour is Texture)
+	
 	var emitter: CPUParticles2D = landing_particles.duplicate()
-	Utils.anchor.add_child(emitter)
 	emitter.global_position = landing_particles.global_position
 	emitter.z_index = 10
 	emitter.amount = amount
 	emitter.emitting = true
 	
-	yield(get_tree().create_timer(emitter.lifetime), "timeout")
-	emitter.queue_free()
+	if texture_or_colour is Texture:
+		emitter.texture = texture_or_colour
+		emitter.color = Color.white
+	else:
+		emitter.color = texture_or_colour
+		emitter.texture = CUBE_TEXTURE
 	
+	Utils.anchor.add_child(emitter)
+	get_tree().create_timer(emitter.lifetime).connect("timeout", emitter, "queue_free")
+	return emitter
+
+func can_fall() -> bool:
+	return !is_on_floor() and air_time > general_physics_data["COYOTE_TIME"]
+
+func get_state_physics_data(state_id: int) -> Dictionary:
+	return physics_data[Enums.PLAYER_STATE.keys()[state_id].to_lower()]
+
+func collect_upgrade(upgrade_type: int):
+	print("Collect upgrade: ", Enums.UPGRADE.keys()[upgrade_type])

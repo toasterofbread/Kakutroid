@@ -1,33 +1,15 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://src/scenes/player/Player.gd" type="Script" id=1]
-[ext_resource path="res://assets/sprites/player/player.png" type="Texture" id=2]
+[ext_resource path="res://assets/temp/white.png" type="Texture" id=2]
 [ext_resource path="res://src/scenes/framework/sprite_trail_emitter/SpriteTrailEmitter.tscn" type="PackedScene" id=3]
+[ext_resource path="res://src/scripts/nodes/ShapePolygon2D.gd" type="Script" id=4]
 
-[sub_resource type="SpriteFrames" id=1]
-animations = [ {
-"frames": [ ExtResource( 2 ) ],
-"loop": true,
-"name": "default",
-"speed": 5.0
-} ]
-
-[sub_resource type="Gradient" id=2]
-offsets = PoolRealArray( 0.0042735, 1 )
-colors = PoolColorArray( 0.999634, 0.953125, 1, 1, 0.995575, 0.433594, 1, 1 )
-
-[sub_resource type="GradientTexture" id=3]
-gradient = SubResource( 2 )
-width = 16
-
-[sub_resource type="RectangleShape2D" id=4]
-extents = Vector2( 8, 8 )
-
-[sub_resource type="Gradient" id=5]
+[sub_resource type="Gradient" id=1]
 offsets = PoolRealArray( 0, 0.724138, 1 )
 colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0 )
 
-[sub_resource type="Animation" id=6]
+[sub_resource type="Animation" id=2]
 resource_name = "wall_squeeze_-1"
 length = 0.2
 step = 0.01
@@ -44,7 +26,7 @@ tracks/0/keys = {
 "values": [ 0.0, -0.25, 0.0 ]
 }
 
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=3]
 resource_name = "wall_squeeze_1"
 length = 0.2
 step = 0.01
@@ -61,35 +43,42 @@ tracks/0/keys = {
 "values": [ 0.0, 0.25, 0.0 ]
 }
 
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 8, 8 )
+
+[sub_resource type="Gradient" id=5]
+colors = PoolColorArray( 1, 1, 1, 1, 0.996078, 0.435294, 1, 1 )
+
+[sub_resource type="GradientTexture" id=6]
+gradient = SubResource( 5 )
+width = 16
+
+[sub_resource type="Gradient" id=11]
+colors = PoolColorArray( 1, 1, 1, 1, 0.996078, 0.435294, 1, 1 )
+
+[sub_resource type="GradientTexture" id=8]
+gradient = SubResource( 11 )
+width = 16
+
+[sub_resource type="CircleShape2D" id=9]
+radius = 8.0
+
+[sub_resource type="CircleShape2D" id=10]
+radius = 8.0
+
 [node name="Player" type="KinematicBody2D"]
+position = Vector2( 8, 8 )
 collision_layer = 2
+collision_mask = 524289
 script = ExtResource( 1 )
 squeeze_amount_x = -0.25
-
-[node name="MainSprite" type="AnimatedSprite" parent="."]
-frames = SubResource( 1 )
-
-[node name="TextureRect" type="TextureRect" parent="MainSprite"]
-margin_left = 8.0
-margin_top = -8.0
-margin_right = 2056.0
-margin_bottom = 8.0
-rect_rotation = 90.0
-rect_scale = Vector2( 1, 16 )
-texture = SubResource( 3 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
 zoom = Vector2( 0.35, 0.35 )
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
-shape = SubResource( 4 )
-
 [node name="SpriteTrailEmitter" parent="." instance=ExtResource( 3 )]
+z_index = 4096
 profiles = {
 "default": {
 "fade_out": true,
@@ -99,26 +88,73 @@ profiles = {
 "modulate": Color( 1, 1, 1, 0.462745 )
 }
 }
-sprites = [ NodePath("../MainSprite") ]
 
 [node name="CrouchTween" type="Tween" parent="."]
 
 [node name="LandingParticles" type="CPUParticles2D" parent="."]
 position = Vector2( 0, 8 )
 rotation = 1.5708
-scale = Vector2( 0.15, 3 )
+scale = Vector2( 0.15, 0.15 )
+z_index = 1
 emitting = false
 amount = 4
 one_shot = true
 speed_scale = 2.0
 explosiveness = 1.0
-texture = SubResource( 3 )
+texture = ExtResource( 2 )
 direction = Vector2( -1, 0 )
-spread = 5.37
 gravity = Vector2( 980, 0 )
 initial_velocity = 335.82
-color_ramp = SubResource( 5 )
+color_ramp = SubResource( 1 )
 
 [node name="WallSqueezeAnimationPlayer" type="AnimationPlayer" parent="."]
-anims/wall_squeeze_-1 = SubResource( 6 )
-anims/wall_squeeze_1 = SubResource( 7 )
+anims/wall_squeeze_-1 = SubResource( 2 )
+anims/wall_squeeze_1 = SubResource( 3 )
+
+[node name="Shapes" type="Node2D" parent="."]
+position = Vector2( -24, 0 )
+
+[node name="Square" type="CollisionShape2D" parent="Shapes"]
+self_modulate = Color( 1, 1, 1, 0 )
+position = Vector2( 24, 0 )
+shape = SubResource( 4 )
+
+[node name="Polygon" type="Polygon2D" parent="Shapes/Square"]
+show_behind_parent = true
+position = Vector2( 0, -8 )
+rotation = 1.5708
+texture = SubResource( 6 )
+polygon = PoolVector2Array( 0, -8, 0, 8, 16, 8, 16, -8 )
+
+[node name="Triangle" type="CollisionPolygon2D" parent="Shapes"]
+visible = false
+self_modulate = Color( 1, 1, 1, 0 )
+position = Vector2( -24, 0 )
+polygon = PoolVector2Array( -8, 8, 0, -8, 8, 8 )
+
+[node name="Polygon" type="Polygon2D" parent="Shapes/Triangle"]
+show_behind_parent = true
+position = Vector2( 0, -8 )
+rotation = 1.5708
+antialiased = true
+texture = SubResource( 8 )
+polygon = PoolVector2Array( 0, 0, 16, 8, 16, -8 )
+
+[node name="Circle" type="CollisionShape2D" parent="Shapes"]
+visible = false
+self_modulate = Color( 1, 1, 1, 0 )
+position = Vector2( -48, 0 )
+shape = SubResource( 9 )
+
+[node name="Polyhon" type="Polygon2D" parent="Shapes/Circle"]
+show_behind_parent = true
+position = Vector2( 7.62939e-06, -8 )
+rotation = 1.5708
+offset = Vector2( 8, 0 )
+antialiased = true
+texture = SubResource( 8 )
+polygon = PoolVector2Array( 8, 0, 7.39104, 3.06147, 5.65685, 5.65685, 3.06147, 7.39104, 4.89859e-16, 8, -3.06147, 7.39104, -5.65685, 5.65685, -7.39104, 3.06147, -8, 9.79717e-16, -7.39104, -3.06147, -5.65685, -5.65685, -3.06147, -7.39104, -1.46958e-15, -8, 3.06147, -7.39104, 5.65685, -5.65685, 7.39104, -3.06147, 8, 0 )
+script = ExtResource( 4 )
+shape = SubResource( 10 )
+
+[node name="ShapeTransitionTween" type="Tween" parent="."]
