@@ -9,9 +9,6 @@ func _on_UpgradePickup_body_entered(body: Node):
 	$CollisionShape2D.queue_free()
 	$SfxrStreamPlayer.play()
 	particles.emitting = true
-	
-	while particles.emitting:
-		yield(get_tree(), "idle_frame")
-	yield(get_tree().create_timer(particles.lifetime / particles.speed_scale), "timeout")
+	yield(Utils.yield_particle_completion(particles), "completed")
 	
 	queue_free()

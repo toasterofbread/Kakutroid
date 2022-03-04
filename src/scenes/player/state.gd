@@ -1,17 +1,16 @@
 extends Node
 class_name PlayerState
 
-var general_physics_data: Dictionary
-var physics_data: Dictionary
+var player_data: Dictionary
+var data: Dictionary
 var player: KinematicBody2D = null
 var activation_time: int = 0
 var disactivation_time: int = 0
 
 func _init(_player: KinematicBody2D):
 	player = _player
-	general_physics_data = player.physics_data["general"]
-	if get_name() in player.physics_data:
-		physics_data = player.physics_data[get_name()]
+	player_data = player.player_data
+	data = player.get_state_data(get_id())
 
 func get_id() -> int:
 	return Enums.PLAYER_STATE.NONE

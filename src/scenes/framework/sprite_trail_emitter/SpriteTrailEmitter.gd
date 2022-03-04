@@ -36,24 +36,18 @@ func _process(delta: float):
 		if emission_timer >= 1.0 / current_profile_data["frequency"]:
 			emit_trail()
 			emission_timer = 0.0
-	
 
 func set_current_profile(value, force_update:=false):
 	
 	if not force_update and value == current_profile:
 		return
 	
-	if current_profile == null:
-		$EmissionTimer.start()
-	
 	current_profile = value
 	if current_profile == null:
 		current_profile_data = null
-		$EmissionTimer.stop()
 		return
 	
 	current_profile_data = profiles[current_profile]
-	$EmissionTimer.wait_time = 1.0 / current_profile_data["frequency"]
 	TrailSpriteTemplate.get_node("DeletionTimer").wait_time = current_profile_data["linger_time"]
 	
 	for property in ["modulate", "material"]:

@@ -3,11 +3,11 @@ class_name Player
 
 # - Signals -
 signal STATE_CHANGED(previous_state)
-signal PHYSICS_DATA_CHANGED() # TODO
+signal DATA_CHANGED() # TODO
 
 # - Data -
-var physics_data: Dictionary = Utils.load_json("res://data/player_physics/default.json")
-var general_physics_data: Dictionary = physics_data["general"]
+var data: Dictionary = Utils.load_json("res://data/player/default.json")
+var player_data: Dictionary = data["general"]
 
 # - State -
 var states: Dictionary = {}
@@ -15,11 +15,13 @@ var current_state: Node = null
 var facing: int = 1
 var velocity: Vector2 = Vector2.ZERO
 var air_time: float = -1.0
+var health: float = null setget set_health
+var intangible: bool = false setget set_intangible
 
 # - Shape -
 const SHAPE_TRANSITION_DURATION: float = 0.5
 onready var shape_data: Dictionary = {
-	Enums.SHAPE.SQUARE: {"node": $Shapes/Square},
+	Enums.SHAPE.CUBE: {"node": $Shapes/Square},
 	Enums.SHAPE.TRIANGLE: {"node": $Shapes/Triangle},
 	Enums.SHAPE.CIRCLE: {"node": $Shapes/Circle},
 }
@@ -32,6 +34,7 @@ onready var shape_transition_tween: Tween = $ShapeTransitionTween
 onready var wall_squeeze_animationplayer: AnimationPlayer = $WallSqueezeAnimationPlayer
 onready var trail_emitter: SpriteTrailEmitter = $SpriteTrailEmitter
 onready var landing_particles: CPUParticles2D = $LandingParticles
+onready var intangibility_timer: Timer = $IntangibilityTimer
 
 # - Scenes -
 const projectile_scene: PackedScene = preload("res://src/scenes/player/Projectile.tscn")
@@ -45,6 +48,7 @@ var crouching: bool = false setget set_crouching
 var running: bool = false
 export var squeeze_amount_x: float = 0.0 setget set_squeeze_amount_x
 var squeeze_amount_y: float = 0.0 setget set_squeeze_amount_y
+onready var gradient: Gradient = $Shapes/Square/Polygon.texture.gradient
 
 var previous_velocity: Vector2 = Vector2.ZERO
 var was_on_floor: bool = false
@@ -65,8 +69,10 @@ func _ready():
 	squeeze_amount_x = 0
 	squeeze_amount_y = 0
 	
+	set_health(player_data["HEALTH"])
 	change_state(Enums.PLAYER_STATE.NEUTRAL)
-	set_current_shape(Enums.SHAPE.SQUARE, true)
+	set_current_shape(Enums.SHAPE.CUBE, true)
+	Game.set_node_damageable(self)
 
 func _process(delta):
 	
@@ -79,6 +85,7 @@ func _process(delta):
 	Overlay.SET("Velocity", velocity)
 	Overlay.SET("State", Enums.PLAYER_STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
 	Overlay.SET("Running", running)
+	Overlay.SET("Crouching", crouching)
 	
 	current_shape_node.scale.x = 1.0 - abs(squeeze_amount_x)
 	current_shape_node.position.x = (CUBE_SIZE / -2) * (current_shape_node.scale.x - 1) * sign(squeeze_amount_x)
@@ -93,7 +100,7 @@ func _process(delta):
 	if Input.is_action_just_pressed("fire_weapon"):
 		fire_weapon()
 	else:
-		if  Input.is_action_just_pressed("fire_weapon_left"):
+		if Input.is_action_just_pressed("fire_weapon_left"):
 			fire_weapon(-1)
 		if Input.is_action_just_pressed("fire_weapon_right"):
 			fire_weapon(1)
@@ -107,9 +114,9 @@ func _physics_process(delta: float):
 		current_state.physics_process(delta)
 	
 	if is_on_wall():
-		vel_move_y(general_physics_data["MAX_FALL_SPEED_WALL"], general_physics_data["GRAVITY_WALL"] * delta)
-	elif velocity.y < general_physics_data["MAX_FALL_SPEED"]:
-		vel_move_y(general_physics_data["MAX_FALL_SPEED"], general_physics_data["GRAVITY"] * delta)
+		vel_move_y(player_data["MAX_FALL_SPEED_WALL"], player_data["GRAVITY_WALL"] * delta)
+	elif velocity.y < player_data["MAX_FALL_SPEED"]:
+		vel_move_y(player_data["MAX_FALL_SPEED"], player_data["GRAVITY"] * delta)
 	
 	velocity = move_and_slide(velocity, Vector2.UP)
 	# Emit landing particles
@@ -268,10 +275,51 @@ func emit_landing_particles(texture_or_colour, amount: int = 3) -> CPUParticles2
 	return emitter
 
 func can_fall() -> bool:
-	return !is_on_floor() and air_time > general_physics_data["COYOTE_TIME"]
+	return !is_on_floor() and air_time > player_data["COYOTE_TIME"]
 
-func get_state_physics_data(state_id: int) -> Dictionary:
-	return physics_data[Enums.PLAYER_STATE.keys()[state_id].to_lower()]
+func get_state_data(state_id: int) -> Dictionary:
+	return data[Enums.PLAYER_STATE.keys()[state_id].to_lower()]
 
 func collect_upgrade(upgrade_type: int):
 	print("Collect upgrade: ", Enums.UPGRADE.keys()[upgrade_type])
+
+func damage(type: int, amount: float, position: Vector2 = null):
+	set_health(health - amount)
+	if health <= 0.0 and false:
+		death(type)
+	elif position != null:
+		velocity = (global_position - position).normalized() * player_data["KNOCKBACK_SPEED"]
+		set_intangible(true)
+
+func death(type: int):
+	print("Player death")
+
+func set_intangible(value: bool):
+	if intangible == value:
+		return
+	intangible = value
+	
+	if intangible:
+		intangibility_timer.start(player_data["HIT_INTANGIBILITY_DURATION"])
+	
+	set_collision_layer_bit(1, !intangible)
+
+func _on_IntangibilityTimer_timeout():
+	set_intangible(false)
+
+func set_health(value: float):
+	if health == value:
+		return
+	
+	health = value
+	
+	var percentage: float = clamp(health / player_data["HEALTH"], 0.0, 1.0)
+	if percentage == 1.0:
+		gradient.colors = [Color(player_data["FULL_COLOUR"])]
+		gradient.offsets = [0.0]
+	elif percentage == 0.0:
+		gradient.colors = [Color(player_data["EMPTY_COLOUR"])]
+		gradient.offsets = [0.0]
+	else:
+		gradient.colors = [Color(player_data["EMPTY_COLOUR"]), Color(player_data["FULL_COLOUR"])]
+		gradient.offsets = [clamp((0.5 - percentage) * 2.0, 0.0, 1.0), clamp((percentage - 1.0) * -2.0, 0.0, 1.0)]

@@ -1,0 +1,12 @@
+{
+    "enemy_cube": {
+        "HEALTH": 20.0,
+        "COLLISION_DAMAGE": 10.0,
+
+        "GRAVITY": 1000.0,
+        "MAX_FALL_SPEED": 300.0,
+
+        "ACCELERATION": 500.0,
+        "MAX_SPEED": 50.0
+    }
+}

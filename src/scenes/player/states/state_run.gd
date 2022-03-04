@@ -13,12 +13,12 @@ func on_enabled(previous_state: PlayerState, data: Dictionary = {}):
 	
 	var pad_x: int = InputManager.get_pad_x()
 	if (("fast_falling" in data and data["fast_falling"]) or player.is_squeezing_wall()) and pad_x != 0:
-		player.vel_move_x(physics_data["MAX_SPEED"] * pad_x)
+		player.vel_move_x(self.data["MAX_SPEED"] * pad_x)
 
 func process(delta):
 	.process(delta)
 	
-	player.crouching = Input.is_action_pressed("crouch")
+	player.crouching = Input.is_action_pressed("pad_down")
 	
 	if Input.is_action_just_pressed("jump"):
 		player.change_state(Enums.PLAYER_STATE.JUMP)
@@ -49,8 +49,8 @@ func physics_process(delta):
 	var pad: Vector2 = InputManager.get_pad()
 	
 	if sign(player.velocity.x) != pad.x and sign(player.velocity.x) != 0:
-		player.vel_move_x(0, physics_data["DECELERATION"] * delta)
+		player.vel_move_x(0, data["DECELERATION"] * delta)
 		Overlay.SET("DECEL", true)
 	else:
-		player.vel_move_x(physics_data["MAX_SPEED"] * pad.x, physics_data["ACCELERATION"] * delta)
+		player.vel_move_x(data["MAX_SPEED"] * pad.x, data["ACCELERATION"] * delta)
 		Overlay.SET("DECEL", false)

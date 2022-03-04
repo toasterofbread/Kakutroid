@@ -6,10 +6,14 @@ func _init(_player: KinematicBody2D).(_player):
 func get_id() -> int:
 	return Enums.PLAYER_STATE.NEUTRAL
 
+func on_enabled(previous_state: PlayerState, data: Dictionary = {}):
+	.on_enabled(previous_state, data)
+	player.running = false
+
 func process(delta):
 	.process(delta)
 	
-	player.crouching = Input.is_action_pressed("crouch")
+	player.crouching = Input.is_action_pressed("pad_down")
 	
 	if Input.is_action_just_pressed("jump") or player.can_fall():
 		player.change_state(Enums.PLAYER_STATE.JUMP, {"fall": !player.is_on_floor()})
@@ -21,7 +25,7 @@ func process(delta):
 			if Input.is_action_pressed("run"):
 				player.change_state(Enums.PLAYER_STATE.RUN)
 			
-			if player.running or player.states[Enums.PLAYER_STATE.WALK].get_time_since_activated() <= general_physics_data["RUN_TRIGGER_WINDOW"]:
+			if player.running or player.states[Enums.PLAYER_STATE.WALK].get_time_since_activated() <= player_data["RUN_TRIGGER_WINDOW"]:
 				player.change_state(Enums.PLAYER_STATE.RUN)
 				return
 			
@@ -35,4 +39,4 @@ func process(delta):
 func physics_process(delta):
 	.physics_process(delta)
 	
-	player.vel_move_x(0.0, physics_data["PASSIVE_DECELERATION"] * delta)
+	player.vel_move_x(0.0, data["PASSIVE_DECELERATION"] * delta)

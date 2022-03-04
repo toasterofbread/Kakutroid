@@ -13,7 +13,7 @@ func init(_direction: int, _shape: int, colour: Color):
 
 func _ready():
 	match shape:
-		Enums.SHAPE.SQUARE:
+		Enums.SHAPE.CUBE:
 			sprite.texture = preload("res://assets/sprites/cube.png")
 		Enums.SHAPE.CIRCLE:
 			sprite.texture = preload("res://assets/sprites/circle.png")
@@ -27,16 +27,23 @@ func _process(delta: float):
 	sprite.rotation_degrees += 750.0 * delta
 	var collision: KinematicCollision2D = move_and_collide(Vector2(500.0 * direction, 0) * delta)
 	if collision:
+		
+		if Game.is_node_damageable(collision.collider):
+			collision.collider.damage(Enums.SHAPE_DAMAGE_TYPES[shape], 10.0)
+			queue_free()
+			return
+		
+		if not $VisibilityNotifier2D.is_on_screen():
+			queue_free()
+			return
+		
 		$WallCollideSound.play()
-		set_process(false)
 		particles.direction.x = -direction
 		particles.global_position = collision.position
-		particles.emitting = true
+		set_process(false)
 		sprite.queue_free()
 		$CollisionShape2D.queue_free()
 		$SpriteTrailEmitter.queue_free()
-		while particles.emitting:
-			yield(get_tree(), "idle_frame")
-		yield(get_tree().create_timer(particles.lifetime * particles.speed_scale), "timeout")
+		particles.emitting = true
+		yield(Utils.yield_particle_completion(particles), "completed")
 		queue_free()
-	
