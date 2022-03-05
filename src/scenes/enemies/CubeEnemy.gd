@@ -14,7 +14,6 @@ func _ready():
 
 func damage(type: int, amount: float, position: Vector2 = null):
 	health -= amount
-	print(amount)
 	if health <= 0.0:
 		death(type)
 	else:

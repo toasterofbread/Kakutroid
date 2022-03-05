@@ -8,6 +8,11 @@ enum PLAYER_STATE {
 	JUMP,
 	SLIDE
 }
+
+enum PLAYER_UPGRADE {
+	WALLJUMP
+}
+
 enum SHAPE {
 	CUBE,
 	CIRCLE,
@@ -17,7 +22,10 @@ enum SHAPE {
 enum DAMAGE_TYPE {
 	CUBE,
 	CIRCLE,
-	TRIANGLE
+	TRIANGLE,
+	
+	FASTFALL,
+	CRUMBLE
 }
 
 const SHAPE_DAMAGE_TYPES: Dictionary = {
@@ -32,8 +40,4 @@ enum DIRECTION {
 	UP,
 	DOWN,
 	NONE
-}
-
-enum UPGRADE {
-	WALLJUMP
 }

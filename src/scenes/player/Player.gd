@@ -1,4 +1,4 @@
-extends KinematicBody2D
+extends KinematicBody2DWithArea2D
 class_name Player
 
 # - Signals -
@@ -19,6 +19,7 @@ var health: float = null setget set_health
 var intangible: bool = false setget set_intangible
 var crouching: bool = false setget set_crouching
 var running: bool = false setget set_running
+var fast_falling: bool = null setget set_fast_falling
 
 # - Shape -
 const SHAPE_TRANSITION_DURATION: float = 0.5
@@ -53,6 +54,7 @@ var previous_velocity: Vector2 = Vector2.ZERO
 var was_on_floor: bool = false
 var last_damage_time: int = 0.0
 var passive_heal_cap: float
+var low_health_sound_wait_time: float = 0.0
 
 func _ready():
 	var all_states: Array = [
@@ -70,18 +72,31 @@ func _ready():
 	squeeze_amount_x = 0
 	squeeze_amount_y = 0
 	
+	area.connect("body_entered", self, "_on_area_body_entered")
+	area.set_collision_mask_bit(19, true)
+	
 	Game.set_node_damageable(self)
 	Game.set_node_layer(self, Game.LAYERS.PLAYER)
 	Game.set_node_layer(landing_particles, Game.LAYERS.PLAYER, 1)
 	passive_heal_cap = player_data["MAX_HEALTH"]
 	set_health(player_data["MAX_HEALTH"])
+	set_fast_falling(false)
 	change_state(Enums.PLAYER_STATE.NEUTRAL)
 	set_current_shape(Enums.SHAPE.CUBE, true)
 
-func _process(delta):
+func _process(delta: float):
 	
 	if Input.is_action_pressed("run"):
 		set_running(true)
+	
+	var health_percentage: float = health / player_data["MAX_HEALTH"]
+	if health_percentage > 0.0:
+		if health_percentage <= 0.3 and not sound_playing("low_health"):
+			if low_health_sound_wait_time >= 0.1 + (0.4 * (health_percentage / 0.3)):
+				play_sound("low_health")
+				low_health_sound_wait_time = 0.0
+			else:
+				low_health_sound_wait_time += delta
 	
 	if (OS.get_ticks_msec() - last_damage_time) / 1000.0 > player_data["PASSIVE_HEAL_IDLE_TIME"] and health > 0.0:
 		set_health(min(passive_heal_cap, health + (player_data["PASSIVE_HEAL_PERCENTAGE"] * player_data["MAX_HEALTH"] * delta / player_data["PASSIVE_HEAL_DURATION"])))
@@ -243,7 +258,7 @@ func fire_weapon(direction: int = facing):
 	assert(direction in [-1, 1])
 	
 	var projectile: Node2D = projectile_scene.instance()
-	projectile.init(direction, current_shape, Color("fe6fff"))
+	projectile.init(direction, current_shape, Color("fe6fff"), self)
 	Utils.anchor.add_child(projectile)
 	projectile.global_position = current_shape_node.global_position
 
@@ -291,9 +306,12 @@ func get_state_data(state_id: int) -> Dictionary:
 	return data[Enums.PLAYER_STATE.keys()[state_id].to_lower()]
 
 func collect_upgrade(upgrade_type: int):
-	print("Collect upgrade: ", Enums.UPGRADE.keys()[upgrade_type])
+	print("Collect upgrade: ", Enums.PLAYER_UPGRADE.keys()[upgrade_type])
 
 func damage(type: int, amount: float, position: Vector2 = null):
+	if amount <= 0.0:
+		return
+	
 	passive_heal_cap = min(passive_heal_cap, (health - amount) + (player_data["MAX_HEALTH"] * player_data["PASSIVE_HEAL_PERCENTAGE"]))
 	
 	set_health(health - amount)
@@ -303,12 +321,14 @@ func damage(type: int, amount: float, position: Vector2 = null):
 		death(type)
 	else:
 		$AnimationPlayer.play("damage")
+		play_sound("hurt")
 		if position != null:
 			velocity = (global_position - position).normalized() * player_data["KNOCKBACK_SPEED"]
 			set_intangible(true)
 
 func death(type: int):
 	print("Player death")
+	play_sound("death")
 
 func set_intangible(value: bool):
 	if intangible == value:
@@ -327,7 +347,7 @@ func set_health(value: float):
 	if health == value:
 		return
 	
-	health = value
+	health = clamp(value, 0.0, player_data["MAX_HEALTH"])
 	
 	var percentage: float = clamp(health / player_data["MAX_HEALTH"], 0.0, 1.0)
 	if percentage == 1.0:
@@ -342,3 +362,20 @@ func set_health(value: float):
 
 func set_running(value: bool):
 	running = value and player_data["CAN_RUN"]
+
+func set_fast_falling(value: bool):
+	if fast_falling == value:
+		return
+	fast_falling = value
+	set_collision_mask_bit(19, !fast_falling)
+	area.disabled = !fast_falling
+
+func _on_area_body_entered(body: Node):
+	if fast_falling and Game.is_node_damageable(body):
+		body.damage(Enums.DAMAGE_TYPE.FASTFALL, player_data["FASTFALL_COLLISION_DAMAGE"], global_position)
+
+func play_sound(sound_key: String):
+	$Sounds.get_node(sound_key).play()
+
+func sound_playing(sound_key: String):
+	return $Sounds.get_node(sound_key).playing

@@ -5,11 +5,12 @@ onready var sprite: Sprite = $Sprite
 
 var direction: int = 1
 var shape: int
+var player: KinematicBody2DWithArea2D
 
-func init(_direction: int, _shape: int, colour: Color):
+func init(_direction: int, _shape: int, colour: Color, _player: KinematicBody2DWithArea2D):
 	direction = _direction
 	shape = _shape
-#	modulate = colour
+	player = _player
 
 func _ready():
 	match shape:
@@ -21,6 +22,7 @@ func _ready():
 			sprite.texture = preload("res://assets/sprites/triangle.png")
 	
 	Game.set_node_layer(self, Game.LAYERS.PLAYER_WEAPON)
+	Game.set_node_layer(particles, Game.LAYERS.PLAYER, 1)
 	$FireSound.play()
 	$CPUParticles2D.texture = sprite.texture
 
@@ -30,7 +32,7 @@ func _process(delta: float):
 	if collision:
 		
 		if Game.is_node_damageable(collision.collider):
-			collision.collider.damage(Enums.SHAPE_DAMAGE_TYPES[shape], 10.0)
+			collision.collider.damage(Enums.SHAPE_DAMAGE_TYPES[shape], player.player_data["BASIC_PROJECTILE_DAMAGE"], collision.position)
 			queue_free()
 			return
 		

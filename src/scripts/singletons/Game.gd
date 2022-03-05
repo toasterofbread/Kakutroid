@@ -35,7 +35,7 @@ func is_node_damageable(node: Node) -> bool:
 	return node.is_in_group(DAMAGEABLE_GROUP_NAME)
 
 # Z Layer system
-enum LAYERS {BACKGROUND, ENEMY, ENEMY_WEAPON, PLAYER, PLAYER_WEAPON, WORLD}
+enum LAYERS {BACKGROUND, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER, WORLD}
 var layer_z_indices: Dictionary = null
 var max_layer_offset: int
 

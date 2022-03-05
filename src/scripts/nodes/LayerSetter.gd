@@ -1,4 +1,3 @@
-tool
 extends Node2D
 class_name LayerSetter
 
@@ -10,11 +9,9 @@ export(Array, NodePath) var z_layer_nodes: = []
 export var apply_z_layer_to_parent: bool = true
 #export var apply_canvas_layer_to_parent: bool = false
 
-export var apply: bool = false setget apply
+#export var apply: bool = false setget apply
 
-func apply(value: bool = true):
-	if not value:
-		return
+func apply():
 	for path in z_layer_nodes + ([".."] if apply_z_layer_to_parent else []):
 		if has_node(path):
 			Game.set_node_layer(get_node(path), z_layer, z_layer_offset)

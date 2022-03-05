@@ -17,7 +17,9 @@
         "COYOTE_TIME": 0.1,
         "RUN_TRIGGER_WINDOW": 0.2,
 
-        "CAN_RUN": true
+        "CAN_RUN": true,
+        "BASIC_PROJECTILE_DAMAGE": 10.0,
+        "FASTFALL_COLLISION_DAMAGE": 20.0
     },
     "neutral": {
         "PASSIVE_DECELERATION": 1000.0

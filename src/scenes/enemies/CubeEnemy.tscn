@@ -89,12 +89,14 @@ position = Vector2( 8, 0 )
 position = Vector2( 11, 16 )
 enabled = true
 cast_to = Vector2( 0, 1 )
+collision_mask = 524289
 
 [node name="Side" type="RayCast2D" parent="RayCastContainer"]
 position = Vector2( 8, 8 )
 rotation = -1.5708
 enabled = true
 cast_to = Vector2( 0, 1 )
+collision_mask = 524289
 
 [node name="CPUParticles2D" type="CPUParticles2D" parent="."]
 material = SubResource( 4 )
@@ -115,7 +117,6 @@ color_ramp = SubResource( 7 )
 [node name="Tween" type="Tween" parent="."]
 
 [node name="DamageArea" type="Area2D" parent="."]
-collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DamageArea"]
