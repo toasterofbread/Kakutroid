@@ -9,6 +9,10 @@ func get_id() -> int:
 func on_enabled(previous_state: PlayerState, data: Dictionary = {}):
 	.on_enabled(previous_state, data)
 	
+	if not player_data["CAN_RUN"]:
+		player.change_state(Enums.PLAYER_STATE.WALK)
+		return
+	
 	player.running = true
 	
 	var pad_x: int = InputManager.get_pad_x()

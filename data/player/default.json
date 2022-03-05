@@ -1,17 +1,23 @@
 {
     "general": {
-        "HEALTH": 50.0,
+        "MAX_HEALTH": 50.0,
         "KNOCKBACK_SPEED": 500.0,
         "HIT_INTANGIBILITY_DURATION": 1.0,
         "FULL_COLOUR": "fe6fff",
         "EMPTY_COLOUR": "ff4e4e",
+
+        "PASSIVE_HEAL_PERCENTAGE": 0.5,
+        "PASSIVE_HEAL_DURATION": 1.0,
+        "PASSIVE_HEAL_IDLE_TIME": 5.0,
 
         "GRAVITY": 1000.0,
         "GRAVITY_WALL": 1000.0,
         "MAX_FALL_SPEED": 300.0,
         "MAX_FALL_SPEED_WALL": 100.0,
         "COYOTE_TIME": 0.1,
-        "RUN_TRIGGER_WINDOW": 0.2
+        "RUN_TRIGGER_WINDOW": 0.2,
+
+        "CAN_RUN": true
     },
     "neutral": {
         "PASSIVE_DECELERATION": 1000.0

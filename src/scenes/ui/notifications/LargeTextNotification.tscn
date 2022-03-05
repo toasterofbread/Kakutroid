@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://src/scenes/ui/notifications/LargeTextNotification.gd" type="Script" id=1]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0, 0, 0, 0.498039 )
+border_width_left = 5
+border_width_top = 2
+border_width_right = 5
+border_width_bottom = 2
+border_color = Color( 0, 0, 0, 0.498039 )
+expand_margin_right = 50.0
+
+[node name="LargeTextNotification" type="PanelContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -1070.0
+margin_bottom = -702.0
+rect_scale = Vector2( 3, 3 )
+custom_styles/panel = SubResource( 1 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="."]
+margin_left = 5.0
+margin_top = 182.0
+margin_right = 845.0
+margin_bottom = 196.0
+rect_min_size = Vector2( 200, 0 )
+text = "Recorded to logbook"
+autowrap = true

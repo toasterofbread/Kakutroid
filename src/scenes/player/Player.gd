@@ -17,6 +17,8 @@ var velocity: Vector2 = Vector2.ZERO
 var air_time: float = -1.0
 var health: float = null setget set_health
 var intangible: bool = false setget set_intangible
+var crouching: bool = false setget set_crouching
+var running: bool = false setget set_running
 
 # - Shape -
 const SHAPE_TRANSITION_DURATION: float = 0.5
@@ -44,14 +46,13 @@ const CUBE_SIZE: int = 16
 const WALL_SQUEEZE_AMOUNT: float = 0.25
 const CROUCH_SQUEEZE_AMOUNT: float = 0.25
 const CUBE_TEXTURE: Texture = preload("res://assets/temp/white.png")
-var crouching: bool = false setget set_crouching
-var running: bool = false
 export var squeeze_amount_x: float = 0.0 setget set_squeeze_amount_x
 var squeeze_amount_y: float = 0.0 setget set_squeeze_amount_y
 onready var gradient: Gradient = $Shapes/Square/Polygon.texture.gradient
-
 var previous_velocity: Vector2 = Vector2.ZERO
 var was_on_floor: bool = false
+var last_damage_time: int = 0.0
+var passive_heal_cap: float
 
 func _ready():
 	var all_states: Array = [
@@ -72,23 +73,26 @@ func _ready():
 	Game.set_node_damageable(self)
 	Game.set_node_layer(self, Game.LAYERS.PLAYER)
 	Game.set_node_layer(landing_particles, Game.LAYERS.PLAYER, 1)
-	set_health(player_data["HEALTH"])
+	passive_heal_cap = player_data["MAX_HEALTH"]
+	set_health(player_data["MAX_HEALTH"])
 	change_state(Enums.PLAYER_STATE.NEUTRAL)
 	set_current_shape(Enums.SHAPE.CUBE, true)
 
 func _process(delta):
 	
-	if Input.is_action_just_pressed("run"):
-		running = true
+	if Input.is_action_pressed("run"):
+		set_running(true)
+	
+	if (OS.get_ticks_msec() - last_damage_time) / 1000.0 > player_data["PASSIVE_HEAL_IDLE_TIME"] and health > 0.0:
+		set_health(min(passive_heal_cap, health + (player_data["PASSIVE_HEAL_PERCENTAGE"] * player_data["MAX_HEALTH"] * delta / player_data["PASSIVE_HEAL_DURATION"])))
 	
 	if current_state != null:
 		current_state.process(delta)
 	
-	Overlay.SET("Health percentage", clamp(health / player_data["HEALTH"], 0.0, 1.0))
+	Overlay.SET("Health percentage", clamp(health / player_data["MAX_HEALTH"], 0.0, 1.0))
 	Overlay.SET("Velocity", velocity)
 	Overlay.SET("State", Enums.PLAYER_STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
-	Overlay.SET("Running", running)
-	Overlay.SET("Crouching", crouching)
+	Overlay.SET("Intangible", intangible)
 	
 	current_shape_node.scale.x = 1.0 - abs(squeeze_amount_x)
 	current_shape_node.position.x = (CUBE_SIZE / -2) * (current_shape_node.scale.x - 1) * sign(squeeze_amount_x)
@@ -290,7 +294,11 @@ func collect_upgrade(upgrade_type: int):
 	print("Collect upgrade: ", Enums.UPGRADE.keys()[upgrade_type])
 
 func damage(type: int, amount: float, position: Vector2 = null):
+	passive_heal_cap = min(passive_heal_cap, (health - amount) + (player_data["MAX_HEALTH"] * player_data["PASSIVE_HEAL_PERCENTAGE"]))
+	
 	set_health(health - amount)
+	last_damage_time = OS.get_ticks_msec()
+	
 	if health <= 0.0:
 		death(type)
 	else:
@@ -321,7 +329,7 @@ func set_health(value: float):
 	
 	health = value
 	
-	var percentage: float = clamp(health / player_data["HEALTH"], 0.0, 1.0)
+	var percentage: float = clamp(health / player_data["MAX_HEALTH"], 0.0, 1.0)
 	if percentage == 1.0:
 		gradient.colors = [Color(player_data["FULL_COLOUR"])]
 		gradient.offsets = [0.0]
@@ -331,3 +339,6 @@ func set_health(value: float):
 	else:
 		gradient.colors = [Color(player_data["EMPTY_COLOUR"]), Color(player_data["FULL_COLOUR"])]
 		gradient.offsets = [clamp((0.5 - percentage) * 2.0, 0.0, 1.0), clamp((percentage - 1.0) * -2.0, 0.0, 1.0)]
+
+func set_running(value: bool):
+	running = value and player_data["CAN_RUN"]

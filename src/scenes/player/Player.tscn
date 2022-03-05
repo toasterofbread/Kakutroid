@@ -57,8 +57,8 @@ width = 16
 gradient = SubResource( 5 )
 width = 16
 
-[sub_resource type="CircleShape2D" id=8]
-radius = 8.0
+[sub_resource type="RectangleShape2D" id=11]
+extents = Vector2( 8, 8 )
 
 [sub_resource type="CircleShape2D" id=9]
 radius = 8.0
@@ -144,7 +144,7 @@ polygon = PoolVector2Array( 0, 0, 16, 8, 16, -8 )
 visible = false
 self_modulate = Color( 1, 1, 1, 0 )
 position = Vector2( -48, 0 )
-shape = SubResource( 8 )
+shape = SubResource( 11 )
 
 [node name="Polyhon" type="Polygon2D" parent="Shapes/Circle"]
 show_behind_parent = true

@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://src/scripts/singletons/notification/Notification.gd" type="Script" id=1]
+
+[node name="NotificationDisplay" type="CanvasLayer"]
+pause_mode = 2
+script = ExtResource( 1 )
+default_preset = NodePath("LayoutPresets/Corner")
+
+[node name="Container" type="Node2D" parent="."]
+
+[node name="Notifications" type="Control" parent="Container"]
+margin_left = 1530.0
+margin_top = 183.0
+margin_right = 1920.0
+margin_bottom = 493.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LayoutPresets" type="Node2D" parent="."]
+
+[node name="Corner" type="Control" parent="LayoutPresets"]
+margin_left = 1512.0
+margin_top = 16.0
+margin_right = 1904.0
+margin_bottom = 311.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Tween" type="Tween" parent="LayoutPresets"]
