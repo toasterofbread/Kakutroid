@@ -17,6 +17,7 @@ func damage(type: int, amount: float, position: Vector2 = null):
 	if health <= 0.0:
 		death(type)
 	else:
+		$HurtSound.play()
 		$AnimationPlayer.play("damage")
 
 func death(type: int):
@@ -27,6 +28,7 @@ func death(type: int):
 	$RayCastContainer.queue_free()
 	$Tween.interpolate_property($Sprite, "modulate:a", $Sprite.modulate.a, 0.0, 0.15, Tween.TRANS_SINE)
 	$Tween.start()
+	$DeathSound.play()
 	$CPUParticles2D.emitting = true
 	yield(Utils.yield_particle_completion($CPUParticles2D), "completed")
 	queue_free()

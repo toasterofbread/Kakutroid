@@ -19,7 +19,7 @@
 
         "CAN_RUN": true,
         "BASIC_PROJECTILE_DAMAGE": 10.0,
-        "FASTFALL_COLLISION_DAMAGE": 20.0
+        "HIGHSPEED_COLLISION_DAMAGE": 30.0
     },
     "neutral": {
         "PASSIVE_DECELERATION": 1000.0

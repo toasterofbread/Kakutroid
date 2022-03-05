@@ -1,6 +1,6 @@
 {
     "enemy_cube": {
-        "HEALTH": 20.0,
+        "HEALTH": 30.0,
         "COLLISION_DAMAGE": 10.0,
 
         "GRAVITY": 1000.0,

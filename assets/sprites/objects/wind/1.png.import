@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/upgrade_pickup_shell_2.png-c6b7cd526d98fda273ea199568fa9fc1.stex"
+path="res://.import/1.png-e2d668d5a23bd6887e72a6103cbaba69.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/objects/upgrade_pickup_shell_2.png"
-dest_files=[ "res://.import/upgrade_pickup_shell_2.png-c6b7cd526d98fda273ea199568fa9fc1.stex" ]
+source_file="res://assets/sprites/objects/wind/1.png"
+dest_files=[ "res://.import/1.png-e2d668d5a23bd6887e72a6103cbaba69.stex" ]
 
 [params]
 

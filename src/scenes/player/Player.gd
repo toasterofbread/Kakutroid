@@ -38,6 +38,7 @@ onready var wall_squeeze_animationplayer: AnimationPlayer = $WallSqueezeAnimatio
 onready var trail_emitter: NodeTrailEmitter = $NodeTrailEmitter
 onready var landing_particles: CPUParticles2D = $LandingParticles
 onready var intangibility_timer: Timer = $IntangibilityTimer
+onready var wind_sprite: AnimatedSprite = $WindSprite
 
 # - Scenes -
 const projectile_scene: PackedScene = preload("res://src/scenes/player/Projectile.tscn")
@@ -74,6 +75,7 @@ func _ready():
 	
 	area.connect("body_entered", self, "_on_area_body_entered")
 	area.set_collision_mask_bit(19, true)
+	area.set_collision_mask_bit(3, true)
 	
 	Game.set_node_damageable(self)
 	Game.set_node_layer(self, Game.LAYERS.PLAYER)
@@ -83,6 +85,7 @@ func _ready():
 	set_fast_falling(false)
 	change_state(Enums.PLAYER_STATE.NEUTRAL)
 	set_current_shape(Enums.SHAPE.CUBE, true)
+	wind_sprite.visible = false
 
 func _process(delta: float):
 	
@@ -97,6 +100,14 @@ func _process(delta: float):
 				low_health_sound_wait_time = 0.0
 			else:
 				low_health_sound_wait_time += delta
+	
+	if wind_sprite.playing:
+		if velocity != Vector2.ZERO and (!wind_sprite.get_meta("falling_only") or velocity.y >= 0.0):
+			wind_sprite.visible = true
+			wind_sprite.rotation = (velocity * Vector2(1, -1)).angle_to(Vector2.UP) - deg2rad(90)
+			wind_sprite.scale.y = abs(wind_sprite.scale.y) * (-1 if abs(wind_sprite.rotation_degrees) > 90.0 else 1)
+		else:
+			wind_sprite.visible = false
 	
 	if (OS.get_ticks_msec() - last_damage_time) / 1000.0 > player_data["PASSIVE_HEAL_IDLE_TIME"] and health > 0.0:
 		set_health(min(passive_heal_cap, health + (player_data["PASSIVE_HEAL_PERCENTAGE"] * player_data["MAX_HEALTH"] * delta / player_data["PASSIVE_HEAL_DURATION"])))
@@ -330,12 +341,12 @@ func death(type: int):
 	print("Player death")
 	play_sound("death")
 
-func set_intangible(value: bool):
+func set_intangible(value: bool, no_timer: bool = false):
 	if intangible == value:
 		return
 	intangible = value
 	
-	if intangible:
+	if intangible and not no_timer:
 		intangibility_timer.start(player_data["HIT_INTANGIBILITY_DURATION"])
 	
 	set_collision_layer_bit(1, !intangible)
@@ -349,7 +360,7 @@ func set_health(value: float):
 	
 	health = clamp(value, 0.0, player_data["MAX_HEALTH"])
 	
-	var percentage: float = clamp(health / player_data["MAX_HEALTH"], 0.0, 1.0)
+	var percentage: float = health / player_data["MAX_HEALTH"]
 	if percentage == 1.0:
 		gradient.colors = [Color(player_data["FULL_COLOUR"])]
 		gradient.offsets = [0.0]
@@ -368,14 +379,32 @@ func set_fast_falling(value: bool):
 		return
 	fast_falling = value
 	set_collision_mask_bit(19, !fast_falling)
-	area.disabled = !fast_falling
+	area.disabled = not fast_falling and not wind_sprite.visible
 
 func _on_area_body_entered(body: Node):
-	if fast_falling and Game.is_node_damageable(body):
-		body.damage(Enums.DAMAGE_TYPE.FASTFALL, player_data["FASTFALL_COLLISION_DAMAGE"], global_position)
+	if (fast_falling or wind_sprite.visible) and Game.is_node_damageable(body):
+		body.damage(Enums.DAMAGE_TYPE.FASTFALL, player_data["HIGHSPEED_COLLISION_DAMAGE"], global_position)
 
 func play_sound(sound_key: String):
 	$Sounds.get_node(sound_key).play()
 
 func sound_playing(sound_key: String):
 	return $Sounds.get_node(sound_key).playing
+
+func play_wind_animation(falling_only: bool = false):
+	wind_sprite.set_meta("falling_only", falling_only)
+	wind_sprite.frame = 0
+	wind_sprite.play()
+	
+	set_intangible(true, true)
+	area.enable()
+	yield(wind_sprite, "animation_finished")
+	area.disabled = not fast_falling
+	set_intangible(false, true)
+#	var awaiting: GDScriptFunctionState = Utils.remote_yield(wind_sprite, "animation_finished")
+#	while awaiting.is_valid():
+#		yield(get_tree(), "idle_frame")
+	
+	wind_sprite.visible = false
+	wind_sprite.playing = false
+	

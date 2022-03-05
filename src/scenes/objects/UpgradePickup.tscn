@@ -1,11 +1,11 @@
 [gd_scene load_steps=11 format=2]
 
-[ext_resource path="res://assets/sprites/objects/upgrade_pickup.png" type="Texture" id=1]
+[ext_resource path="res://assets/sprites/objects/upgrade_pickup/upgrade_pickup.png" type="Texture" id=1]
 [ext_resource path="res://src/scenes/objects/UpgradePickup.gd" type="Script" id=2]
 [ext_resource path="res://assets/sprites/circle.png" type="Texture" id=3]
 [ext_resource path="res://addons/godot_sfxr/SfxrStreamPlayer.gd" type="Script" id=4]
-[ext_resource path="res://assets/sprites/objects/upgrade_pickup_shell_2.png" type="Texture" id=5]
-[ext_resource path="res://assets/sprites/objects/upgrade_pickup_shell_1.png" type="Texture" id=6]
+[ext_resource path="res://assets/sprites/objects/upgrade_pickup/upgrade_pickup_shell_1.png" type="Texture" id=5]
+[ext_resource path="res://assets/sprites/objects/upgrade_pickup/upgrade_pickup_shell_2.png" type="Texture" id=6]
 
 [sub_resource type="Animation" id=2]
 resource_name = "Idle"
@@ -151,12 +151,12 @@ texture = ExtResource( 1 )
 modulate = Color( 0.278431, 0.290196, 1, 1 )
 self_modulate = Color( 1, 1, 1, 0.498039 )
 scale = Vector2( 0.987346, 1.13102 )
-texture = ExtResource( 5 )
+texture = ExtResource( 6 )
 
 [node name="ShellB" type="Sprite" parent="Visual"]
 modulate = Color( 0.278431, 0.290196, 1, 1 )
 self_modulate = Color( 1, 1, 1, 0.498039 )
 scale = Vector2( 1.01898, 0.912654 )
-texture = ExtResource( 6 )
+texture = ExtResource( 5 )
 
 [connection signal="body_entered" from="." to="." method="_on_UpgradePickup_body_entered"]

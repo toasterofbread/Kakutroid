@@ -45,7 +45,13 @@ func on_disabled(_next_state: PlayerState):
 func process(delta):
 	.process(delta)
 	
-	player.fast_falling = player.crouching and not fast_fall_locked
+	if not player.fast_falling:
+		if player.crouching and not fast_fall_locked:
+			player.fast_falling = true
+			player.play_wind_animation(true)
+	else:
+		player.fast_falling = player.crouching and not fast_fall_locked
+	
 	
 	player.crouching = Input.is_action_pressed("pad_down")
 	var pad_x: int = InputManager.get_pad_x()
@@ -73,16 +79,21 @@ func process(delta):
 	
 	if player.is_on_floor():
 		if pad_x == 0:
+			player.play_sound("land")
 			player.change_state(Enums.PLAYER_STATE.NEUTRAL)
 		elif player.fast_falling:
-			player.change_state(Enums.PLAYER_STATE.SLIDE, {"dash_magnitude": player.previous_velocity.y / data["FAST_FALL_MAX_SPEED"]})
+			var magnitude: float = player.previous_velocity.y / data["FAST_FALL_MAX_SPEED"]
+			player.play_sound("wavedash" if magnitude >= 0.9 else "land")
+			if magnitude >= 0.9:
+				player.play_wind_animation()
+				
+			player.change_state(Enums.PLAYER_STATE.SLIDE, {"dash_magnitude": magnitude})
 		elif player.running:
+			player.play_sound("land")
 			player.change_state(Enums.PLAYER_STATE.RUN)
 		else:
+			player.play_sound("land")
 			player.change_state(Enums.PLAYER_STATE.WALK)
-		
-#		if abs(player.previous_velocity.y) >= player.PARTICLE_EMISSION_SPEED_MIN:
-#			player.emit_landing_particles(4 if player.fast_falling else 2)
 		
 		return
 	
@@ -90,8 +101,16 @@ func process(delta):
 		current_jump_time = data["JUMP_MAX_DURATION"]
 	elif (player.is_squeezing_wall() or (player.is_on_wall() and EASY_WALLJUMP)) and Input.is_action_just_pressed("jump"):
 		current_jump_time = 0.0
-		player.vel_move_y((-data["WALLJUMP_BOOST_Y_FAST"] if player.fast_falling else -data["WALLJUMP_BOOST_Y"]) * 0.8)
-		player.vel_move_x((-data["WALLJUMP_BOOST_X_FAST"] if player.fast_falling else -data["WALLJUMP_BOOST_X"]) * (sign(player.squeeze_amount_x) if player.is_squeezing_wall() else pad_x))
+		
+		if player.fast_falling:
+			player.play_wind_animation()
+			player.play_sound("super_walljump")
+			player.vel_move_y(-data["WALLJUMP_BOOST_Y_FAST"] * 0.8)
+			player.vel_move_x(-data["WALLJUMP_BOOST_X_FAST"] * (sign(player.squeeze_amount_x) if player.is_squeezing_wall() else pad_x))
+		else:
+			player.play_sound("walljump")
+			player.vel_move_y(-data["WALLJUMP_BOOST_Y"] * 0.8)
+			player.vel_move_x(-data["WALLJUMP_BOOST_X"] * (sign(player.squeeze_amount_x) if player.is_squeezing_wall() else pad_x))
 	
 	if not player.crouching:
 		fast_fall_locked = false
