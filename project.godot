@@ -119,10 +119,20 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/Godoxel/Util.gd"
 }, {
+"base": "Node2D",
+"class": "LayerSetter",
+"language": "GDScript",
+"path": "res://src/scripts/nodes/LayerSetter.gd"
+}, {
 "base": "NinePatchRect",
 "class": "NinePatchRectTextureButton",
 "language": "GDScript",
 "path": "res://addons/Godot-Utilities/Nodes/NinePatchRectTextureButton.gd"
+}, {
+"base": "Node2D",
+"class": "NodeTrailEmitter",
+"language": "GDScript",
+"path": "res://addons/Godot-Utilities/Nodes/NodeTrailEmitter.gd"
 }, {
 "base": "KinematicBody2D",
 "class": "Player",
@@ -153,11 +163,6 @@ _global_script_classes=[ {
 "class": "ShapePolygon2D",
 "language": "GDScript",
 "path": "res://src/scripts/nodes/ShapePolygon2D.gd"
-}, {
-"base": "Node2D",
-"class": "SpriteTrailEmitter",
-"language": "GDScript",
-"path": "res://src/scenes/framework/sprite_trail_emitter/SpriteTrailEmitter.gd"
 } ]
 _global_script_class_icons={
 "BrushPrefabs": "",
@@ -182,14 +187,15 @@ _global_script_class_icons={
 "GERainbow": "",
 "GERect": "",
 "GEUtils": "",
+"LayerSetter": "",
 "NinePatchRectTextureButton": "",
+"NodeTrailEmitter": "",
 "Player": "",
 "PlayerState": "",
 "RoomCollisionObject": "",
 "SfxrGenerator": "",
 "SfxrGlobals": "",
-"ShapePolygon2D": "",
-"SpriteTrailEmitter": ""
+"ShapePolygon2D": ""
 }
 
 [application]

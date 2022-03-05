@@ -1,8 +1,8 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://src/scenes/player/Player.gd" type="Script" id=1]
 [ext_resource path="res://assets/temp/white.png" type="Texture" id=2]
-[ext_resource path="res://src/scenes/framework/sprite_trail_emitter/SpriteTrailEmitter.tscn" type="PackedScene" id=3]
+[ext_resource path="res://addons/Godot-Utilities/Nodes/NodeTrailEmitter.gd" type="Script" id=3]
 [ext_resource path="res://src/scripts/nodes/ShapePolygon2D.gd" type="Script" id=4]
 
 [sub_resource type="Gradient" id=1]
@@ -47,44 +47,48 @@ tracks/0/keys = {
 extents = Vector2( 8, 8 )
 
 [sub_resource type="Gradient" id=5]
-colors = PoolColorArray( 1, 1, 1, 1, 0.996078, 0.435294, 1, 1 )
+colors = PoolColorArray( 1, 0.305882, 0.305882, 1, 0.996078, 0.435294, 1, 1 )
 
 [sub_resource type="GradientTexture" id=6]
 gradient = SubResource( 5 )
 width = 16
 
-[sub_resource type="GradientTexture" id=8]
+[sub_resource type="GradientTexture" id=7]
 gradient = SubResource( 5 )
 width = 16
+
+[sub_resource type="CircleShape2D" id=8]
+radius = 8.0
 
 [sub_resource type="CircleShape2D" id=9]
 radius = 8.0
 
-[sub_resource type="CircleShape2D" id=10]
-radius = 8.0
+[sub_resource type="Animation" id=10]
+resource_name = "damage"
+length = 0.2
+step = 0.01
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 0.45098, 0.45098, 1 ), Color( 1, 1, 1, 1 ) ]
+}
 
 [node name="Player" type="KinematicBody2D"]
 position = Vector2( 8, 8 )
 collision_layer = 2
 collision_mask = 524289
 script = ExtResource( 1 )
-squeeze_amount_x = -0.25
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
 zoom = Vector2( 0.35, 0.35 )
-
-[node name="SpriteTrailEmitter" parent="." instance=ExtResource( 3 )]
-z_index = 4096
-profiles = {
-"default": {
-"fade_out": true,
-"frequency": 100,
-"linger_time": 0.07,
-"material": null,
-"modulate": Color( 1, 1, 1, 0.462745 )
-}
-}
 
 [node name="CrouchTween" type="Tween" parent="."]
 
@@ -92,7 +96,6 @@ profiles = {
 position = Vector2( 0, 8 )
 rotation = 1.5708
 scale = Vector2( 0.15, 0.15 )
-z_index = 1
 emitting = false
 amount = 4
 one_shot = true
@@ -134,14 +137,14 @@ show_behind_parent = true
 position = Vector2( 0, -8 )
 rotation = 1.5708
 antialiased = true
-texture = SubResource( 8 )
+texture = SubResource( 7 )
 polygon = PoolVector2Array( 0, 0, 16, 8, 16, -8 )
 
 [node name="Circle" type="CollisionShape2D" parent="Shapes"]
 visible = false
 self_modulate = Color( 1, 1, 1, 0 )
 position = Vector2( -48, 0 )
-shape = SubResource( 9 )
+shape = SubResource( 8 )
 
 [node name="Polyhon" type="Polygon2D" parent="Shapes/Circle"]
 show_behind_parent = true
@@ -149,14 +152,21 @@ position = Vector2( 7.62939e-06, -8 )
 rotation = 1.5708
 offset = Vector2( 8, 0 )
 antialiased = true
-texture = SubResource( 8 )
+texture = SubResource( 7 )
 polygon = PoolVector2Array( 8, 0, 7.39104, 3.06147, 5.65685, 5.65685, 3.06147, 7.39104, 4.89859e-16, 8, -3.06147, 7.39104, -5.65685, 5.65685, -7.39104, 3.06147, -8, 9.79717e-16, -7.39104, -3.06147, -5.65685, -5.65685, -3.06147, -7.39104, -1.46958e-15, -8, 3.06147, -7.39104, 5.65685, -5.65685, 7.39104, -3.06147, 8, 0 )
 script = ExtResource( 4 )
-shape = SubResource( 10 )
+shape = SubResource( 9 )
 
 [node name="ShapeTransitionTween" type="Tween" parent="."]
 
 [node name="IntangibilityTimer" type="Timer" parent="."]
 one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/damage = SubResource( 10 )
+
+[node name="NodeTrailEmitter" type="Node2D" parent="."]
+modulate = Color( 1, 1, 1, 0.498039 )
+script = ExtResource( 3 )
 
 [connection signal="timeout" from="IntangibilityTimer" to="." method="_on_IntangibilityTimer_timeout"]

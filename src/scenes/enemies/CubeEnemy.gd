@@ -9,6 +9,7 @@ var health: float = 0.0
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	health = data["HEALTH"]
+	Game.set_node_layer(self, Game.LAYERS.ENEMY)
 	Game.set_node_damageable(self)
 
 func damage(type: int, amount: float, position: Vector2 = null):

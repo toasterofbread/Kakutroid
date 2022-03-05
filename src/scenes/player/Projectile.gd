@@ -20,6 +20,7 @@ func _ready():
 		Enums.SHAPE.TRIANGLE:
 			sprite.texture = preload("res://assets/sprites/triangle.png")
 	
+	Game.set_node_layer(self, Game.LAYERS.PLAYER_WEAPON)
 	$FireSound.play()
 	$CPUParticles2D.texture = sprite.texture
 

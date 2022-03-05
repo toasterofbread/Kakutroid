@@ -28,16 +28,6 @@ collision_mask = 9
 script = ExtResource( 3 )
 
 [node name="SpriteTrailEmitter" parent="." instance=ExtResource( 2 )]
-profiles = {
-"default": {
-"fade_out": true,
-"frequency": -1,
-"linger_time": 0.04,
-"material": null,
-"modulate": null
-}
-}
-sprites = [ NodePath("../Sprite") ]
 
 [node name="CPUParticles2D" type="CPUParticles2D" parent="."]
 material = ExtResource( 5 )

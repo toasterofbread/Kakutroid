@@ -6,7 +6,7 @@ signal STATE_CHANGED(previous_state)
 signal DATA_CHANGED() # TODO
 
 # - Data -
-var data: Dictionary = Utils.load_json("res://data/player/default.json")
+var data: Dictionary = Utils.load_json("res://data/player/default.json").result
 var player_data: Dictionary = data["general"]
 
 # - State -
@@ -32,7 +32,7 @@ var current_shape_node: Node2D = null
 onready var crouch_tween: Tween = $CrouchTween
 onready var shape_transition_tween: Tween = $ShapeTransitionTween
 onready var wall_squeeze_animationplayer: AnimationPlayer = $WallSqueezeAnimationPlayer
-onready var trail_emitter: SpriteTrailEmitter = $SpriteTrailEmitter
+onready var trail_emitter: NodeTrailEmitter = $NodeTrailEmitter
 onready var landing_particles: CPUParticles2D = $LandingParticles
 onready var intangibility_timer: Timer = $IntangibilityTimer
 
@@ -69,10 +69,12 @@ func _ready():
 	squeeze_amount_x = 0
 	squeeze_amount_y = 0
 	
+	Game.set_node_damageable(self)
+	Game.set_node_layer(self, Game.LAYERS.PLAYER)
+	Game.set_node_layer(landing_particles, Game.LAYERS.PLAYER, 1)
 	set_health(player_data["HEALTH"])
 	change_state(Enums.PLAYER_STATE.NEUTRAL)
 	set_current_shape(Enums.SHAPE.CUBE, true)
-	Game.set_node_damageable(self)
 
 func _process(delta):
 	
@@ -82,6 +84,7 @@ func _process(delta):
 	if current_state != null:
 		current_state.process(delta)
 	
+	Overlay.SET("Health percentage", clamp(health / player_data["HEALTH"], 0.0, 1.0))
 	Overlay.SET("Velocity", velocity)
 	Overlay.SET("State", Enums.PLAYER_STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
 	Overlay.SET("Running", running)
@@ -176,6 +179,9 @@ func set_current_shape(value: int, instant: bool = false):
 	current_shape = value
 	shape_transition_tween.stop_all()
 	
+	if trail_emitter.has_trail_node(current_shape_node):
+		trail_emitter.remove_trail_node(current_shape_node)
+	
 	if instant:
 		var position: Vector2
 		if current_shape_node:
@@ -188,8 +194,8 @@ func set_current_shape(value: int, instant: bool = false):
 		current_shape_node.visible = true
 		Utils.reparent_node(current_shape_node, self)
 		current_shape_node.global_position = position
-		trail_emitter.sprite_nodes.clear()
-		trail_emitter.sprite_nodes.append(current_shape_node)
+		
+		trail_emitter.add_trail_node(current_shape_node)
 	else:
 		shape_transition_tween.interpolate_property(current_shape_node, "modulate:a", current_shape_node.modulate.a, 0.0, SHAPE_TRANSITION_DURATION / 2.0, Tween.TRANS_EXPO)
 		shape_transition_tween.start()
@@ -201,8 +207,9 @@ func set_current_shape(value: int, instant: bool = false):
 		current_shape_node.visible = true
 		Utils.reparent_node(current_shape_node, self)
 		current_shape_node.global_position = position
-		trail_emitter.sprite_nodes.clear()
-		trail_emitter.sprite_nodes.append(current_shape_node)
+		
+		trail_emitter.add_trail_node(current_shape_node)
+		
 		shape_transition_tween.interpolate_property(current_shape_node, "modulate:a", current_shape_node.modulate.a, 1.0, SHAPE_TRANSITION_DURATION / 2.0, Tween.TRANS_EXPO)
 		shape_transition_tween.start()
 		yield(shape_transition_tween, "tween_all_completed")
@@ -259,7 +266,6 @@ func emit_landing_particles(texture_or_colour, amount: int = 3) -> CPUParticles2
 	
 	var emitter: CPUParticles2D = landing_particles.duplicate()
 	emitter.global_position = landing_particles.global_position
-	emitter.z_index = 10
 	emitter.amount = amount
 	emitter.emitting = true
 	
@@ -285,11 +291,13 @@ func collect_upgrade(upgrade_type: int):
 
 func damage(type: int, amount: float, position: Vector2 = null):
 	set_health(health - amount)
-	if health <= 0.0 and false:
+	if health <= 0.0:
 		death(type)
-	elif position != null:
-		velocity = (global_position - position).normalized() * player_data["KNOCKBACK_SPEED"]
-		set_intangible(true)
+	else:
+		$AnimationPlayer.play("damage")
+		if position != null:
+			velocity = (global_position - position).normalized() * player_data["KNOCKBACK_SPEED"]
+			set_intangible(true)
 
 func death(type: int):
 	print("Player death")
