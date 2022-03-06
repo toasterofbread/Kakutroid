@@ -21,6 +21,9 @@ static func get_instance() -> Notification:
 	push_error("Cannot get base notification instance")
 	return null
 
+static func get_type_name() -> String:
+	return "Notification"
+
 func _ready():
 	rect_size = rect_min_size
 

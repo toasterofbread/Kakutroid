@@ -1,63 +1,7 @@
-extends KinematicBody2DWithArea2D
-class_name Player
-
-# - Signals -
-signal STATE_CHANGED(previous_state)
-signal DATA_CHANGED() # TODO
-
-# - Data -
-var data: Dictionary = Utils.load_json("res://data/player/default.json").result
-var player_data: Dictionary = data["general"]
-
-# - State -
-var states: Dictionary = {}
-var current_state: Node = null
-var facing: int = 1
-var velocity: Vector2 = Vector2.ZERO
-var air_time: float = -1.0
-var health: float = null setget set_health
-var intangible: bool = false setget set_intangible
-var crouching: bool = false setget set_crouching
-var running: bool = false setget set_running
-var fast_falling: bool = null setget set_fast_falling
-
-# - Shape -
-const SHAPE_TRANSITION_DURATION: float = 0.5
-onready var shape_data: Dictionary = {
-	Enums.SHAPE.CUBE: {"node": $Shapes/Square},
-	Enums.SHAPE.TRIANGLE: {"node": $Shapes/Triangle},
-	Enums.SHAPE.CIRCLE: {"node": $Shapes/Circle},
-}
-var current_shape: int = null setget set_current_shape
-var current_shape_node: Node2D = null
-
-# - Nodes -
-onready var crouch_tween: Tween = $CrouchTween
-onready var shape_transition_tween: Tween = $ShapeTransitionTween
-onready var wall_squeeze_animationplayer: AnimationPlayer = $WallSqueezeAnimationPlayer
-onready var trail_emitter: NodeTrailEmitter = $NodeTrailEmitter
-onready var landing_particles: CPUParticles2D = $LandingParticles
-onready var intangibility_timer: Timer = $IntangibilityTimer
-onready var wind_sprite: AnimatedSprite = $WindSprite
-
-# - Scenes -
-const projectile_scene: PackedScene = preload("res://src/scenes/player/Projectile.tscn")
-
-# - Other -
-const CUBE_SIZE: int = 16
-const WALL_SQUEEZE_AMOUNT: float = 0.25
-const CROUCH_SQUEEZE_AMOUNT: float = 0.25
-const CUBE_TEXTURE: Texture = preload("res://assets/temp/white.png")
-export var squeeze_amount_x: float = 0.0 setget set_squeeze_amount_x
-var squeeze_amount_y: float = 0.0 setget set_squeeze_amount_y
-onready var gradient: Gradient = $Shapes/Square/Polygon.texture.gradient
-var previous_velocity: Vector2 = Vector2.ZERO
-var was_on_floor: bool = false
-var last_damage_time: int = 0.0
-var passive_heal_cap: float
-var low_health_sound_wait_time: float = 0.0
+extends Player
 
 func _ready():
+	
 	var all_states: Array = [
 		preload("res://src/scenes/player/states/state_neutral.gd").new(self),
 		preload("res://src/scenes/player/states/state_walk.gd").new(self),
@@ -67,8 +11,14 @@ func _ready():
 	]
 	
 	for state in all_states:
-		assert(not state.get_id() in states, "State ID '" + Enums.PLAYER_STATE.keys()[state.get_id()] + "' is duplicated")
+		assert(not state.get_id() in states, "State ID '" + Player.STATE.keys()[state.get_id()] + "' is duplicated")
 		states[state.get_id()] = state
+	
+	demofile_path = DEMOFILE_DIRECTORY.plus_file(demofile_path)
+	if demo_mode in [DEMO_MODE.PLAY, DEMO_MODE.PLAY_TEST]:
+		assert(File.new().file_exists(demofile_path), "No file exists at path '" + demofile_path + "'")
+		demofile_data = Utils.load_json(demofile_path).result
+		demo_enabled = demo_mode == DEMO_MODE.PLAY
 	
 	squeeze_amount_x = 0
 	squeeze_amount_y = 0
@@ -83,14 +33,51 @@ func _ready():
 	passive_heal_cap = player_data["MAX_HEALTH"]
 	set_health(player_data["MAX_HEALTH"])
 	set_fast_falling(false)
-	change_state(Enums.PLAYER_STATE.NEUTRAL)
+	change_state(Player.STATE.NEUTRAL)
 	set_current_shape(Enums.SHAPE.CUBE, true)
 	wind_sprite.visible = false
 
 func _process(delta: float):
 	
-	if Input.is_action_pressed("run"):
+	if is_action_pressed("run"):
 		set_running(true)
+	
+	if demo_mode == DEMO_MODE.RECORD or demo_mode == DEMO_MODE.PLAY_TEST:
+		if Input.is_action_just_pressed("demo_start_recording") and not demo_enabled:
+			demo_enabled = true
+			modulate = Color.blue
+			demo_playback_head = -physics_frame
+		
+		elif Input.is_action_just_pressed("demo_stop_recording") and demo_enabled:
+			demo_enabled = false
+			modulate = Color.white
+			
+			if demo_mode == DEMO_MODE.RECORD:
+				var write: bool = true
+				var file: File = File.new()
+				if file.file_exists(demofile_path):
+					var action: CustomDialog.Action = yield(CustomDialog.create_and_yield_option({
+						"buttons": ["Yes", "No"], 
+						"pause": true, 
+						"title": "Overwrite file?", 
+						"body": "A file already exists at path '" + demofile_path + "'. Overwrite it?"
+					}), "completed")
+					
+					write = action.is_button() and action.get_button() == "Yes"
+				
+				if write:
+					file.open(demofile_path, File.WRITE)
+					file.store_string(to_json(demofile_data))
+					file.close()
+					
+					yield(CustomDialog.create_and_yield_option({
+						"buttons": ["OK"], 
+						"pause": true, 
+						"title": "File saved", 
+						"body": "Recorded input data saved to file '" + demofile_path + "'. Size: " + str(len(demofile_data)) + " frames."
+					}), "completed")
+			
+				demofile_data.clear()
 	
 	var health_percentage: float = health / player_data["MAX_HEALTH"]
 	if health_percentage > 0.0:
@@ -117,7 +104,7 @@ func _process(delta: float):
 	
 	Overlay.SET("Health percentage", clamp(health / player_data["MAX_HEALTH"], 0.0, 1.0))
 	Overlay.SET("Velocity", velocity)
-	Overlay.SET("State", Enums.PLAYER_STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
+	Overlay.SET("State", Player.STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
 	Overlay.SET("Intangible", intangible)
 	
 	current_shape_node.scale.x = 1.0 - abs(squeeze_amount_x)
@@ -126,22 +113,37 @@ func _process(delta: float):
 	current_shape_node.position.y = (CUBE_SIZE / -2) * (current_shape_node.scale.y - 1) * sign(squeeze_amount_y)
 	previous_velocity = velocity
 	
-	var pad_x: int = InputManager.get_pad_x()
+	var pad_x: int = get_pad_x()
 	if pad_x != 0:
 		facing = pad_x
 	
-	if Input.is_action_just_pressed("fire_weapon"):
+	if is_action_just_pressed("fire_weapon"):
 		fire_weapon()
 	else:
-		if Input.is_action_just_pressed("fire_weapon_left"):
+		if is_action_just_pressed("fire_weapon_left"):
 			fire_weapon(-1)
-		if Input.is_action_just_pressed("fire_weapon_right"):
+		if is_action_just_pressed("fire_weapon_right"):
 			fire_weapon(1)
 	
-	if Input.is_action_just_pressed("cycle_shape"):
+	if is_action_just_pressed("cycle_shape"):
 		set_current_shape(Enums.SHAPE.CIRCLE)
 
 func _physics_process(delta: float):
+	
+	if demo_mode == DEMO_MODE.RECORD and demo_enabled:
+		
+		var pressed_actions: Array = []
+		for action in InputMap.get_actions():
+			if action in DEMO_IGNORED_ACTIONS:
+				continue
+			if is_action_pressed(action):
+				pressed_actions.append(action)
+		demofile_data.append(pressed_actions)
+	elif demo_mode == DEMO_MODE.PLAY_TEST and demo_enabled and not is_frame_within_demofile(get_demo_playback_head()):
+		demo_enabled = false
+		modulate = Color.white
+	
+	physics_frame += 1
 	
 	if current_state != null:
 		current_state.physics_process(delta)
@@ -201,6 +203,58 @@ func change_state(state_id: int, data: Dictionary = {}):
 		current_state.on_enabled(previous_state, data)
 		
 		emit_signal("STATE_CHANGED", previous_state)
+
+func is_frame_within_demofile(frame: int) -> bool:
+	return frame < len(demofile_data)
+
+func get_demo_playback_head() -> int:
+	return physics_frame + demo_playback_head
+
+func is_demo_controlled() -> bool:
+	return demo_mode in [DEMO_MODE.PLAY, DEMO_MODE.PLAY_TEST] and demo_enabled
+
+func is_action_pressed(action: String) -> bool:
+	if not is_demo_controlled():
+		return Input.is_action_pressed(action)
+	elif is_frame_within_demofile(get_demo_playback_head()):
+		return action in demofile_data[get_demo_playback_head()]
+	else:
+		return false
+
+func is_action_just_pressed(action: String) -> bool:
+	if not is_demo_controlled():
+		return Input.is_action_just_pressed(action)
+	elif is_frame_within_demofile(get_demo_playback_head()):
+		if is_frame_within_demofile(get_demo_playback_head() - 1) and action in demofile_data[get_demo_playback_head() - 1]:
+			return false
+		return action in demofile_data[get_demo_playback_head()]
+	else:
+		return false
+
+func is_action_just_released(action: String) -> bool:
+	if not is_demo_controlled():
+		return Input.is_action_released(action)
+	elif is_frame_within_demofile(get_demo_playback_head()):
+		if is_frame_within_demofile(get_demo_playback_head() - 1) and not action in demofile_data[get_demo_playback_head() - 1]:
+			return false
+		return not action in demofile_data[get_demo_playback_head()]
+	else:
+		return false
+
+func get_pad(just_pressed: bool = false) -> Vector2:
+	return Vector2(get_pad_x(just_pressed), get_pad_y(just_pressed))
+
+func get_pad_x(just_pressed: bool = false) -> int:
+	if just_pressed:
+		return int(is_action_just_pressed("pad_right")) - int(is_action_just_pressed("pad_left"))
+	else:
+		return int(is_action_pressed("pad_right")) - int(is_action_pressed("pad_left"))
+
+func get_pad_y(just_pressed: bool = false) -> int:
+	if just_pressed:
+		return int(is_action_just_pressed("pad_down")) - int(is_action_just_pressed("pad_up"))
+	else:
+		return int(is_action_pressed("pad_down")) - int(is_action_pressed("pad_up"))
 
 func set_current_shape(value: int, instant: bool = false):
 	if value == current_shape:
@@ -314,10 +368,10 @@ func can_fall() -> bool:
 	return !is_on_floor() and air_time > player_data["COYOTE_TIME"]
 
 func get_state_data(state_id: int) -> Dictionary:
-	return data[Enums.PLAYER_STATE.keys()[state_id].to_lower()]
+	return data[Player.STATE.keys()[state_id].to_lower()]
 
 func collect_upgrade(upgrade_type: int):
-	print("Collect upgrade: ", Enums.PLAYER_UPGRADE.keys()[upgrade_type])
+	print("Collect upgrade: ", UPGRADE.keys()[upgrade_type])
 
 func damage(type: int, amount: float, position: Vector2 = null):
 	if amount <= 0.0:
@@ -407,4 +461,6 @@ func play_wind_animation(falling_only: bool = false):
 	
 	wind_sprite.visible = false
 	wind_sprite.playing = false
-	
+
+func using_upgrade(upgrade: int) -> bool:
+	return save_data["upgrades"][upgrade]["acquired"] >= 1 and save_data["upgrades"][upgrade]["enabled"]

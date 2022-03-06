@@ -32,4 +32,7 @@ func get_size():
 	return rect_size * rect_scale
 
 static func get_instance() -> Notification:
-	return NotificationManager.types["SceneNotification"].instance()
+	return NotificationManager.types[get_type_name()].instance()
+
+static func get_type_name() -> String:
+	return "SceneNotification"

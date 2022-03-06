@@ -1,6 +1,6 @@
 extends Area2D
 
-export(Enums.PLAYER_UPGRADE) var type: int
+export(Player.UPGRADE) var type: int
 onready var particles: CPUParticles2D = $CPUParticles2D
 
 func _on_UpgradePickup_body_entered(body: Node):

@@ -1,7 +1,7 @@
 extends CanvasLayer
 
-const separation: float = 10.0
-const reorder_time: float = 0.1
+const SEPARATION: float = 10.0
+const REORDER_TIME: float = 0.1
 
 export var default_preset: NodePath
 
@@ -11,18 +11,22 @@ onready var container: Control = $Container/Notifications
 const moving_interaction_button: String = "pad_up"
 
 var node_data: Dictionary = {}
-const types = {
-	"TextNotification": preload("res://src/scenes/ui/notifications/TextNotification.tscn"),
-	"LargeTextNotification": preload("res://src/scenes/ui/notifications/LargeTextNotification.tscn"),
-	"ButtonPromptNotification": preload("res://src/scenes/ui/notifications/ButtonPromptNotification.tscn"),
-	"SceneNotification": preload("res://src/scenes/ui/notifications/SceneNotification.tscn")
-}
-
+var types = {}
 var left_to_right: bool = false
 
 func _ready():
-	# TODO
-#	layer = Enums.CanvasLayers.NOTIFICATION
+	
+	var all_types: Array = [
+		preload("res://src/scenes/ui/notifications/TextNotification.tscn"),
+		preload("res://src/scenes/ui/notifications/LargeTextNotification.tscn"),
+		preload("res://src/scenes/ui/notifications/ButtonPromptNotification.tscn"),
+		preload("res://src/scenes/ui/notifications/SceneNotification.tscn")
+	]
+	for type in all_types:
+		var instance: Notification = type.instance()
+		types[instance.get_type_name()] = type
+		instance.queue_free()
+	
 	$LayoutPresets.visible = false
 	
 	if has_node(default_preset):
@@ -49,9 +53,9 @@ func reposition_notifications():
 		if i == 0:
 			destinations.append(0.0)
 		else:
-			destinations.append(destinations[i - 1] + container.get_child(i - 1).get_size().y + separation)
+			destinations.append(destinations[i - 1] + container.get_child(i - 1).get_size().y + SEPARATION)
 		
-		notification.tween.interpolate_property(notification, "rect_position:y", notification.rect_position.y, destinations[i], reorder_time)
+		notification.tween.interpolate_property(notification, "rect_position:y", notification.rect_position.y, destinations[i], REORDER_TIME)
 		notification.tween.start()
 #		yield(Utils.wait(0.5, true), "completed")
 

@@ -36,4 +36,7 @@ func just_released():
 	return Input.is_action_pressed(action_key)
 
 static func get_instance() -> Notification:
-	return NotificationManager.types["ButtonPromptNotification"].instance()
+	return NotificationManager.types[get_type_name()].instance()
+
+static func get_type_name() -> String:
+	return "ButtonPromptNotification"

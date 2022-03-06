@@ -1,6 +1,7 @@
 extends Node
 
 signal settings_changed(path, value)
+signal APPLICATION_QUIT()
 
 const DAMAGEABLE_GROUP_NAME: String = "damageable"
 const DEFAULT_CONFIG_PATH: String = "res://default_config.cfg"
@@ -10,7 +11,10 @@ var _config: ConfigFile = null
 var settings_file_path: String
 var user_dir_path: String
 
+var quitting: bool = false
+
 func _init():
+	pause_mode = Node.PAUSE_MODE_PROCESS
 	other_data = Utils.load_json("res://data/other.json").result
 	prepare_z_layers()
 	
@@ -22,6 +26,14 @@ func _init():
 
 func _ready():
 	load_settings()
+
+func quit():
+	quitting = true
+	for connection in get_signal_connection_list("APPLICATION_QUIT"):
+		var function = connection["target"].callv(connection["method"], connection["binds"])
+		while function is GDScriptFunctionState and function.is_valid():
+			function = yield(function, "completed")
+	get_tree().quit()
 
 func set_node_damageable(node: Node, damageable: bool = true):
 	assert(node.has_method("damage"))

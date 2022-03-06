@@ -1,14 +1,17 @@
 extends Node
 
-signal update_button_icons
+signal UPDATE_BUTTON_ICONS()
 
 var button_icons: Dictionary = Utils.dir2dict(ButtonIcon.icons_directory, Utils.DIR2DICT_MODES.NESTED)
 var using_keyboard: bool = false setget set_using_keyboard
 var text_input_active: bool = false
 
+func _init():
+	pause_mode = Node.PAUSE_MODE_PROCESS
+
 func _input(event: InputEvent):
-	if event.is_action_pressed("DEBUG_quit"):
-		get_tree().quit()
+	if event.is_action_released("DEBUG_quit"):
+		Game.quit()
 	if event.is_action_pressed("toggle_fullscreen"):
 		OS.window_fullscreen = !OS.window_fullscreen
 	
@@ -20,7 +23,7 @@ func _input(event: InputEvent):
 
 func set_using_keyboard(value: bool):
 	using_keyboard = value
-	emit_signal("update_button_icons", null)
+	emit_signal("UPDATE_BUTTON_ICONS", null)
 	
 	Overlay.SET("Using keyboard", value)
 

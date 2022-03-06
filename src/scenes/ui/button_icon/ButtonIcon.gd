@@ -13,7 +13,7 @@ var joypad_icons_key: String = null
 
 func _ready():
 	Game.connect("settings_changed", self, "settings_changed")
-	InputManager.connect("update_button_icons", self, "update_icon")
+	InputManager.connect("UPDATE_BUTTON_ICONS", self, "update_icon")
 	
 	if set_icon_on_ready:
 		update_icon()

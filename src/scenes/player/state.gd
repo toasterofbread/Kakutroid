@@ -3,20 +3,20 @@ class_name PlayerState
 
 var player_data: Dictionary
 var data: Dictionary
-var player: KinematicBody2D = null
+var player: Player = null
 var activation_time: int = 0
 var disactivation_time: int = 0
 
-func _init(_player: KinematicBody2D):
+func _init(_player: Player):
 	player = _player
 	player_data = player.player_data
 	data = player.get_state_data(get_id())
 
 func get_id() -> int:
-	return Enums.PLAYER_STATE.NONE
+	return Player.STATE.NONE
 
 func get_name() -> String:
-	return Enums.PLAYER_STATE.keys()[get_id()].to_lower()
+	return Player.STATE.keys()[get_id()].to_lower()
 
 func process(_delta: float):
 	pass

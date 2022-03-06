@@ -1,18 +1,5 @@
 extends Node
 
-enum PLAYER_STATE {
-	NONE,
-	NEUTRAL,
-	WALK,
-	RUN,
-	JUMP,
-	SLIDE
-}
-
-enum PLAYER_UPGRADE {
-	WALLJUMP
-}
-
 enum SHAPE {
 	CUBE,
 	CIRCLE,

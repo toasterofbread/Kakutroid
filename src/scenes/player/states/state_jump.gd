@@ -19,7 +19,7 @@ func _init(player: KinematicBody2D).(player):
 	player.connect("DATA_CHANGED", self, "player_data_changed")
 
 func get_id() -> int:
-	return Enums.PLAYER_STATE.JUMP
+	return Player.STATE.JUMP
 
 func on_enabled(previous_state: PlayerState, data: Dictionary = {}):
 	.on_enabled(previous_state, data)
@@ -31,7 +31,7 @@ func on_enabled(previous_state: PlayerState, data: Dictionary = {}):
 		current_jump_time = 0.0
 		player.play_sound("jump")
 	
-	fast_fall_locked = player.crouching and previous_state.get_id() != Enums.PLAYER_STATE.RUN
+	fast_fall_locked = player.crouching and previous_state.get_id() != Player.STATE.RUN
 	
 	if "boost_magnitude" in data:
 		boost_magnitude = data["boost_magnitude"]
@@ -53,8 +53,8 @@ func process(delta):
 		player.fast_falling = player.crouching and not fast_fall_locked
 	
 	
-	player.crouching = Input.is_action_pressed("pad_down")
-	var pad_x: int = InputManager.get_pad_x()
+	player.crouching = player.is_action_pressed("pad_down")
+	var pad_x: int = player.get_pad_x()
 	
 	if player.running:
 		if pad_x != 0:
@@ -65,7 +65,7 @@ func process(delta):
 				player.running = false
 				pad_unpressed_time = 0.0
 	else:
-		var pad_just_pressed: int = InputManager.get_pad_x(true)
+		var pad_just_pressed: int = player.get_pad_x(true)
 		if pad_just_pressed != 0:
 			if pad_just_pressed == sign(pad_last_pressed_time) and (OS.get_ticks_msec() - pad_last_pressed_time) / 1000.0 <= player_data["RUN_TRIGGER_WINDOW"]:
 				player.running = true
@@ -80,26 +80,26 @@ func process(delta):
 	if player.is_on_floor():
 		if pad_x == 0:
 			player.play_sound("land")
-			player.change_state(Enums.PLAYER_STATE.NEUTRAL)
+			player.change_state(Player.STATE.NEUTRAL)
 		elif player.fast_falling:
 			var magnitude: float = player.previous_velocity.y / data["FAST_FALL_MAX_SPEED"]
 			player.play_sound("wavedash" if magnitude >= 0.9 else "land")
 			if magnitude >= 0.9:
 				player.play_wind_animation()
 				
-			player.change_state(Enums.PLAYER_STATE.SLIDE, {"dash_magnitude": magnitude})
+			player.change_state(Player.STATE.SLIDE, {"dash_magnitude": magnitude})
 		elif player.running:
 			player.play_sound("land")
-			player.change_state(Enums.PLAYER_STATE.RUN)
+			player.change_state(Player.STATE.RUN)
 		else:
 			player.play_sound("land")
-			player.change_state(Enums.PLAYER_STATE.WALK)
+			player.change_state(Player.STATE.WALK)
 		
 		return
 	
-	if (!Input.is_action_pressed("jump") and current_jump_time >= data["JUMP_MIN_DURATION"]) or player.is_on_ceiling():
+	if (!player.is_action_pressed("jump") and current_jump_time >= data["JUMP_MIN_DURATION"]) or player.is_on_ceiling():
 		current_jump_time = data["JUMP_MAX_DURATION"]
-	elif (player.is_squeezing_wall() or (player.is_on_wall() and EASY_WALLJUMP)) and Input.is_action_just_pressed("jump"):
+	elif (player.is_squeezing_wall() or (player.is_on_wall() and EASY_WALLJUMP)) and player.is_action_just_pressed("jump"):
 		current_jump_time = 0.0
 		
 		if player.fast_falling:
@@ -124,7 +124,7 @@ func physics_process(delta):
 	elif player.fast_falling and player.velocity.y < data["FAST_FALL_MAX_SPEED"]:
 		player.vel_move_y(data["FAST_FALL_MAX_SPEED"], data["FAST_FALL_ACCELERATION"] * delta)
 	
-	var pad_x: int = InputManager.get_pad_x()
+	var pad_x: int = player.get_pad_x()
 	if pad_x == 0:
 		player.vel_move_x(0, DRIFT_DECELERATION * delta)
 	elif sign(player.velocity.x) != pad_x and player.velocity.x != 0:
@@ -143,7 +143,7 @@ func set_run_mode(value: bool):
 		return
 	run_mode = value
 	
-	var data: Dictionary = player.get_state_data(Enums.PLAYER_STATE.RUN if player.running else Enums.PLAYER_STATE.WALK)
+	var data: Dictionary = player.get_state_data(Player.STATE.RUN if player.running else Player.STATE.WALK)
 	
 	DRIFT_ACCELERATION = data["ACCELERATION"]
 	DRIFT_DECELERATION = data["DECELERATION"]

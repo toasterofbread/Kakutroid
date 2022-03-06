@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scripts/nodes/ControlledCamera2D/ControlledCamera2D.gd"
 }, {
+"base": "WindowDialog",
+"class": "CustomDialog",
+"language": "GDScript",
+"path": "res://addons/Godot-Utilities/Nodes/CustomDialog.gd"
+}, {
 "base": "ExPhysicsBodyArea2D",
 "class": "DamageProxy",
 "language": "GDScript",
@@ -172,7 +177,7 @@ _global_script_classes=[ {
 "base": "KinematicBody2DWithArea2D",
 "class": "Player",
 "language": "GDScript",
-"path": "res://src/scenes/player/Player.gd"
+"path": "res://src/scenes/player/Player.header.gd"
 }, {
 "base": "Node",
 "class": "PlayerState",
@@ -214,6 +219,7 @@ _global_script_class_icons={
 "ButtonIcon": "",
 "ButtonPromptNotification": "",
 "ControlledCamera2D": "res://src/scripts/nodes/ControlledCamera2D/icon.png",
+"CustomDialog": "",
 "DamageProxy": "",
 "ExArray": "",
 "ExPhysicsBodyArea2D": "",
@@ -360,6 +366,16 @@ cycle_shape={
 DEBUG_TRIGGER={
 "deadzone": 0.5,
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":96,"unicode":0,"echo":false,"script":null)
+ ]
+}
+demo_start_recording={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777235,"unicode":0,"echo":false,"script":null)
+ ]
+}
+demo_stop_recording={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777236,"unicode":0,"echo":false,"script":null)
  ]
 }
 
