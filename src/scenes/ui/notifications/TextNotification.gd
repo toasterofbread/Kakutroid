@@ -1,24 +1,23 @@
-tool
-extends PanelContainer
+extends Notification
+class_name TextNotification
 
-export var update_size: bool = false setget update_size
+static func create(text: String, auto_popup: bool = true) -> Notification:
+	var notification = get_instance()
+	notification.init(text)
+	if auto_popup:
+		notification.popup()
+	return notification
 
-func update_size(_value: bool = false):
-	rect_size = rect_min_size
-
-func init(text: String, clear):
+func init(text: String):
 	$Label.text = text
 	
-	if Notification.left_to_right:
+	if NotificationManager.left_to_right:
 		var style: StyleBoxFlat = get("custom_styles/panel")
 		style.expand_margin_left = style.expand_margin_right
 		style.expand_margin_right = 0
-	
-	Notification.add(self, clear)
-	return self
-
-func _ready():
-	update_size()
 
 func get_size():
 	return rect_size * rect_scale
+
+static func get_instance() -> Notification:
+	return NotificationManager.types["TextNotification"].instance()

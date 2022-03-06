@@ -16,8 +16,8 @@ expand_margin_right = 50.0
 [node name="ButtonPromptNotification" type="PanelContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -1119.0
-margin_bottom = -701.0
+margin_right = -1759.0
+margin_bottom = -1061.0
 rect_scale = Vector2( 3, 3 )
 custom_styles/panel = SubResource( 1 )
 script = ExtResource( 1 )
@@ -28,17 +28,16 @@ __meta__ = {
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 margin_left = 5.0
 margin_top = 2.0
-margin_right = 796.0
-margin_bottom = 377.0
+margin_right = 156.0
+margin_bottom = 17.0
 
 [node name="ButtonIcon" parent="HBoxContainer" instance=ExtResource( 3 )]
-margin_bottom = 375.0
+margin_bottom = 15.0
 rect_min_size = Vector2( 16, 15 )
 texture = ExtResource( 4 )
 
 [node name="Label" type="Label" parent="HBoxContainer"]
 margin_left = 20.0
-margin_top = 180.0
 margin_right = 151.0
-margin_bottom = 194.0
+margin_bottom = 14.0
 text = "Recorded to logbook"

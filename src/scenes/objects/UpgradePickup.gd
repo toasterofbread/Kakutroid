@@ -10,7 +10,7 @@ func _on_UpgradePickup_body_entered(body: Node):
 	$SfxrStreamPlayer.play()
 	
 	# TODO
-	Notification.types["text"].instance().init("Upgrade acquired: Walljump", Notification.lengths["normal"])
+	TextNotification.create("Upgrade acquired: Walljump").clear_after(Notification.LENGTH_NORMAL)
 	
 	particles.modulate = $Visual/Main.modulate
 	particles.emitting = true

@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://vid.webm" type="VideoStream" id=1]
+[ext_resource path="res://src/scenes/ui/notifications/scenes/Video.gd" type="Script" id=2]
+
+[node name="Control" type="HBoxContainer"]
+margin_right = 144.0
+margin_bottom = 81.0
+size_flags_horizontal = 5
+size_flags_vertical = 5
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VideoPlayer" type="VideoPlayer" parent="."]
+margin_right = 144.0
+margin_bottom = 81.0
+rect_min_size = Vector2( 144, 81 )
+size_flags_horizontal = 5
+size_flags_vertical = 5
+stream = ExtResource( 1 )
+autoplay = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
