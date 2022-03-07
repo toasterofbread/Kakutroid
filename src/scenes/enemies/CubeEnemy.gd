@@ -12,7 +12,7 @@ func _ready():
 	Game.set_node_layer(self, Game.LAYERS.ENEMY)
 	Game.set_node_damageable(self)
 
-func damage(type: int, amount: float, position: Vector2 = null):
+func damage(type: int, amount: float, _position: Vector2 = null):
 	health -= amount
 	if health <= 0.0:
 		death(type)
@@ -20,7 +20,7 @@ func damage(type: int, amount: float, position: Vector2 = null):
 		$HurtSound.play()
 		$AnimationPlayer.play("damage")
 
-func death(type: int):
+func death(_type: int):
 	set_physics_process(false)
 	set_process(false)
 	
@@ -37,7 +37,7 @@ func _process(delta: float):
 	velocity.x = move_toward(velocity.x, data["MAX_SPEED"] * facing, data["ACCELERATION"] * delta)
 	velocity.y = move_toward(velocity.y, data["MAX_FALL_SPEED"], data["GRAVITY"] * delta)
 
-func _physics_process(delta: float):
+func _physics_process(_delta: float):
 	move_and_slide(velocity, Vector2.UP)
 	if $RayCastContainer/Side.is_colliding() or not $RayCastContainer/Bottom.is_colliding():
 		velocity.x *= -1

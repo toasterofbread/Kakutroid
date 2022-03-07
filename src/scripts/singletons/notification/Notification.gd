@@ -35,7 +35,7 @@ func popup():
 	var last_notification: Notification = NotificationManager.get_last_notification()
 	NotificationManager.container.add_child(self)
 	
-	rect_position.y = 0 if last_notification == null else last_notification.rect_position.y + last_notification.get_size().y + NotificationManager.separation
+	rect_position.y = 0 if last_notification == null else last_notification.rect_position.y + last_notification.get_size().y + NotificationManager.SEPARATION
 	
 	if NotificationManager.left_to_right:
 		rect_position.x = -get_size().x

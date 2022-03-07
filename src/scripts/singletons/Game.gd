@@ -24,6 +24,9 @@ func _init():
 	
 	settings_file_path = get_from_user_dir("settings.cfg")
 
+func _exit_tree():
+	quitting = true
+
 func _ready():
 	load_settings()
 

@@ -1,4 +1,3 @@
-# Header file for Player.gd
 extends KinematicBody2DWithArea2D
 class_name Player
 
@@ -9,6 +8,15 @@ signal DATA_CHANGED() # TODO
 # - Enums -
 enum STATE { NONE, NEUTRAL, WALK, RUN, JUMP, SLIDE }
 enum UPGRADE { WALLJUMP }
+
+# - Export vars -
+export var debug_mode: bool = false
+export var silent: bool = false
+
+# - Modules -
+var module_demo: Node = null
+var module_input: Node = null
+var module_physics: Node = null
 
 # - Nodes -
 onready var crouch_tween: Tween = $CrouchTween
@@ -23,8 +31,6 @@ onready var wind_sprite: AnimatedSprite = $WindSprite
 var states: Dictionary = {}
 var current_state: Node = null
 var facing: int = 1
-var velocity: Vector2 = Vector2.ZERO
-var air_time: float = -1.0
 var health: float = null setget set_health
 var intangible: bool = false setget set_intangible
 var crouching: bool = false setget set_crouching
@@ -54,17 +60,6 @@ var current_shape_node: Node2D = null
 # - Scenes -
 const projectile_scene: PackedScene = preload("res://src/scenes/player/Projectile.tscn")
 
-# - Demofile recording and playback -
-const DEMO_IGNORED_ACTIONS: Array = ["DEBUG_quit", "demo_start_recording", "demo_stop_recording"]
-const DEMOFILE_DIRECTORY: String = "res://data/demofiles/"
-
-enum DEMO_MODE {PLAY, PLAY_TEST, RECORD, NONE}
-export(DEMO_MODE) var demo_mode: int = DEMO_MODE.NONE
-export var demofile_path: String = ""
-var demofile_data: Array = []
-var demo_enabled: bool = false
-var demo_playback_head: int = 0
-
 # - Other -
 const CUBE_SIZE: int = 16
 const WALL_SQUEEZE_AMOUNT: float = 0.25
@@ -73,72 +68,50 @@ const CUBE_TEXTURE: Texture = preload("res://assets/temp/white.png")
 var squeeze_amount_x: float = 0.0 setget set_squeeze_amount_x
 var squeeze_amount_y: float = 0.0 setget set_squeeze_amount_y
 onready var gradient: Gradient = $Shapes/Square/Polygon.texture.gradient
-var previous_velocity: Vector2 = Vector2.ZERO
-var was_on_floor: bool = false
 var last_damage_time: int = 0.0
 var passive_heal_cap: float
 var low_health_sound_wait_time: float = 0.0
 
 # - Public function declarations -
-func change_state(state_id: int, data: Dictionary = {}):
+func change_state(_state_id: int, _data: Dictionary = {}):
 	return
-func wall_collided(direction: int, strong: bool = false):
+func wall_collided(_direction: int, _strong: bool = false):
 	return
-func fire_weapon(direction: int = facing):
+func fire_weapon(_direction: int = facing):
 	return
 func is_squeezing_wall() -> bool:
 	return null
-func vel_move_y(to: float, by: float = INF):
+func emit_landing_particles(_texture_or_colour, _amount: int = 3) -> CPUParticles2D:
+	return null
+func get_state_data(_state_id: int) -> Dictionary:
+	return null
+func collect_upgrade(_upgrade_type: int):
 	return
-func vel_move_x(to: float, by: float = INF):
+func damage(_type: int, _amount: float, _position: Vector2 = null):
 	return
-func vel_move(to: Vector2, delta: float = INF):
+func play_sound(_sound_key: String):
 	return
-func emit_landing_particles(texture_or_colour, amount: int = 3) -> CPUParticles2D:
-	return null
-func can_fall() -> bool:
-	return null
-func get_state_data(state_id: int) -> Dictionary:
-	return null
-func collect_upgrade(upgrade_type: int):
+func is_sound_playing(_sound_key: String):
 	return
-func damage(type: int, amount: float, position: Vector2 = null):
+func play_wind_animation(_falling_only: bool = false):
 	return
-func play_sound(sound_key: String):
-	return
-func is_sound_playing(sound_key: String):
-	return
-func play_wind_animation(falling_only: bool = false):
-	return
-func using_upgrade(upgrade: int) -> bool:
-	return null
-func is_action_pressed(action: String) -> bool:
-	return null
-func is_action_just_pressed(action: String) -> bool:
-	return null
-func is_action_just_released(action: String) -> bool:
-	return null
-func get_pad(just_pressed: bool = false) -> Vector2:
-	return null
-func get_pad_x(just_pressed: bool = false) -> int:
-	return null
-func get_pad_y(just_pressed: bool = false) -> int:
+func using_upgrade(_upgrade: int) -> bool:
 	return null
 
 # - Setter declarations -
-func set_health(value: float):
+func set_health(_value: float):
 	return
-func set_intangible(value: bool):
+func set_intangible(_value: bool):
 	return
-func set_crouching(value: bool):
+func set_crouching(_value: bool):
 	return
-func set_running(value: bool):
+func set_running(_value: bool):
 	return
-func set_fast_falling(value: bool):
+func set_fast_falling(_value: bool):
 	return
-func set_current_shape(value: int):
+func set_current_shape(_value: int):
 	return
-func set_squeeze_amount_x(value: float):
+func set_squeeze_amount_x(_value: float):
 	return
-func set_squeeze_amount_y(value: float):
+func set_squeeze_amount_y(_value: float):
 	return

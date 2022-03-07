@@ -15,7 +15,8 @@ var pad_last_pressed_time: int = 0
 
 var run_mode: bool = null
 
-func _init(player: KinematicBody2D).(player):
+func init(player: Player):
+	.init(player)
 	player.connect("DATA_CHANGED", self, "player_data_changed")
 
 func get_id() -> int:
@@ -27,7 +28,7 @@ func on_enabled(previous_state: PlayerState, data: Dictionary = {}):
 	if "fall" in data and data["fall"]:
 		current_jump_time = self.data["JUMP_MAX_DURATION"]
 	else:
-		player.velocity.y = 0.0
+		module_physics.velocity.y = 0.0
 		current_jump_time = 0.0
 		player.play_sound("jump")
 	
@@ -52,9 +53,8 @@ func process(delta):
 	else:
 		player.fast_falling = player.crouching and not fast_fall_locked
 	
-	
-	player.crouching = player.is_action_pressed("pad_down")
-	var pad_x: int = player.get_pad_x()
+	player.crouching = module_input.is_action_pressed("pad_down")
+	var pad_x: int = module_input.get_pad_x()
 	
 	if player.running:
 		if pad_x != 0:
@@ -65,7 +65,7 @@ func process(delta):
 				player.running = false
 				pad_unpressed_time = 0.0
 	else:
-		var pad_just_pressed: int = player.get_pad_x(true)
+		var pad_just_pressed: int = module_input.get_pad_x(true)
 		if pad_just_pressed != 0:
 			if pad_just_pressed == sign(pad_last_pressed_time) and (OS.get_ticks_msec() - pad_last_pressed_time) / 1000.0 <= player_data["RUN_TRIGGER_WINDOW"]:
 				player.running = true
@@ -74,7 +74,7 @@ func process(delta):
 	
 	set_run_mode(player.running)
 	
-	if player.is_on_wall() and pad_x != 0 and sign(player.previous_velocity.x) == pad_x:
+	if player.is_on_wall() and pad_x != 0 and sign(module_physics.previous_velocity.x) == pad_x:
 		player.wall_collided(pad_x)
 	
 	if player.is_on_floor():
@@ -82,7 +82,7 @@ func process(delta):
 			player.play_sound("land")
 			player.change_state(Player.STATE.NEUTRAL)
 		elif player.fast_falling:
-			var magnitude: float = player.previous_velocity.y / data["FAST_FALL_MAX_SPEED"]
+			var magnitude: float = module_physics.previous_velocity.y / data["FAST_FALL_MAX_SPEED"]
 			player.play_sound("wavedash" if magnitude >= 0.9 else "land")
 			if magnitude >= 0.9:
 				player.play_wind_animation()
@@ -97,20 +97,20 @@ func process(delta):
 		
 		return
 	
-	if (!player.is_action_pressed("jump") and current_jump_time >= data["JUMP_MIN_DURATION"]) or player.is_on_ceiling():
+	if (!module_input.is_action_pressed("jump") and current_jump_time >= data["JUMP_MIN_DURATION"]) or player.is_on_ceiling():
 		current_jump_time = data["JUMP_MAX_DURATION"]
-	elif (player.is_squeezing_wall() or (player.is_on_wall() and EASY_WALLJUMP)) and player.is_action_just_pressed("jump"):
+	elif (player.is_squeezing_wall() or (player.is_on_wall() and EASY_WALLJUMP)) and module_input.is_action_just_pressed("jump"):
 		current_jump_time = 0.0
 		
 		if player.fast_falling:
 			player.play_wind_animation()
 			player.play_sound("super_walljump")
-			player.vel_move_y(-data["WALLJUMP_BOOST_Y_FAST"] * 0.8)
-			player.vel_move_x(-data["WALLJUMP_BOOST_X_FAST"] * (sign(player.squeeze_amount_x) if player.is_squeezing_wall() else pad_x))
+			module_physics.vel_move_y(-data["WALLJUMP_BOOST_Y_FAST"] * 0.8)
+			module_physics.vel_move_x(-data["WALLJUMP_BOOST_X_FAST"] * (sign(player.squeeze_amount_x) if player.is_squeezing_wall() else pad_x))
 		else:
 			player.play_sound("walljump")
-			player.vel_move_y(-data["WALLJUMP_BOOST_Y"] * 0.8)
-			player.vel_move_x(-data["WALLJUMP_BOOST_X"] * (sign(player.squeeze_amount_x) if player.is_squeezing_wall() else pad_x))
+			module_physics.vel_move_y(-data["WALLJUMP_BOOST_Y"] * 0.8)
+			module_physics.vel_move_x(-data["WALLJUMP_BOOST_X"] * (sign(player.squeeze_amount_x) if player.is_squeezing_wall() else pad_x))
 	
 	if not player.crouching:
 		fast_fall_locked = false
@@ -119,19 +119,19 @@ func physics_process(delta):
 	.physics_process(delta)
 	
 	if current_jump_time < data["JUMP_MAX_DURATION"]:
-		player.vel_move_y(-INF, ((data["JUMP_ACCELERATION_WALL"] if player.is_on_wall() else data["JUMP_ACCELERATION"]) + (data["JUMP_ACCELERATION_BOOST"] * boost_magnitude)) * delta)
+		module_physics.vel_move_y(-INF, ((data["JUMP_ACCELERATION_WALL"] if player.is_on_wall() else data["JUMP_ACCELERATION"]) + (data["JUMP_ACCELERATION_BOOST"] * boost_magnitude)) * delta)
 		current_jump_time += delta
-	elif player.fast_falling and player.velocity.y < data["FAST_FALL_MAX_SPEED"]:
-		player.vel_move_y(data["FAST_FALL_MAX_SPEED"], data["FAST_FALL_ACCELERATION"] * delta)
+	elif player.fast_falling and module_physics.velocity.y < data["FAST_FALL_MAX_SPEED"]:
+		module_physics.vel_move_y(data["FAST_FALL_MAX_SPEED"], data["FAST_FALL_ACCELERATION"] * delta)
 	
-	var pad_x: int = player.get_pad_x()
+	var pad_x: int = module_input.get_pad_x()
 	if pad_x == 0:
-		player.vel_move_x(0, DRIFT_DECELERATION * delta)
-	elif sign(player.velocity.x) != pad_x and player.velocity.x != 0:
-		player.vel_move_x(0.0, DRIFT_DECELERATION * delta)
+		module_physics.vel_move_x(0, DRIFT_DECELERATION * delta)
+	elif sign(module_physics.velocity.x) != pad_x and module_physics.velocity.x != 0:
+		module_physics.vel_move_x(0.0, DRIFT_DECELERATION * delta)
 		Overlay.SET("DECEL", true)
 	else:
-		player.vel_move_x(DRIFT_MAX_SPEED * pad_x, DRIFT_ACCELERATION * delta)
+		module_physics.vel_move_x(DRIFT_MAX_SPEED * pad_x, DRIFT_ACCELERATION * delta)
 		Overlay.SET("DECEL", false)
 
 func player_data_changed():

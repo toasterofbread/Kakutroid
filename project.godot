@@ -159,6 +159,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scripts/nodes/LayerSetter.gd"
 }, {
+"base": "Node",
+"class": "List",
+"language": "GDScript",
+"path": "res://addons/todot/model/List.gd"
+}, {
+"base": "Node",
+"class": "Model",
+"language": "GDScript",
+"path": "res://addons/todot/model/Model.gd"
+}, {
 "base": "NinePatchRect",
 "class": "NinePatchRectTextureButton",
 "language": "GDScript",
@@ -177,7 +187,27 @@ _global_script_classes=[ {
 "base": "KinematicBody2DWithArea2D",
 "class": "Player",
 "language": "GDScript",
-"path": "res://src/scenes/player/Player.header.gd"
+"path": "res://src/scenes/player/Player.gdh"
+}, {
+"base": "Node",
+"class": "PlayerModule",
+"language": "GDScript",
+"path": "res://src/scenes/player/Module.gd"
+}, {
+"base": "PlayerModule",
+"class": "PlayerModuleDemo",
+"language": "GDScript",
+"path": "res://src/scenes/player/modules/Demo.gd"
+}, {
+"base": "PlayerModule",
+"class": "PlayerModuleInput",
+"language": "GDScript",
+"path": "res://src/scenes/player/modules/Input.gd"
+}, {
+"base": "PlayerModule",
+"class": "PlayerModulePhysics",
+"language": "GDScript",
+"path": "res://src/scenes/player/modules/Physics.gd"
 }, {
 "base": "Node",
 "class": "PlayerState",
@@ -208,6 +238,11 @@ _global_script_classes=[ {
 "class": "ShapePolygon2D",
 "language": "GDScript",
 "path": "res://src/scripts/nodes/ShapePolygon2D.gd"
+}, {
+"base": "Node",
+"class": "Task",
+"language": "GDScript",
+"path": "res://addons/todot/model/Task.gd"
 }, {
 "base": "Notification",
 "class": "TextNotification",
@@ -245,16 +280,23 @@ _global_script_class_icons={
 "KinematicBody2DWithArea2D": "",
 "LargeTextNotification": "",
 "LayerSetter": "",
+"List": "",
+"Model": "",
 "NinePatchRectTextureButton": "",
 "NodeTrailEmitter": "",
 "Notification": "",
 "Player": "",
+"PlayerModule": "",
+"PlayerModuleDemo": "",
+"PlayerModuleInput": "",
+"PlayerModulePhysics": "",
 "PlayerState": "",
 "RoomCollisionObject": "",
 "SceneNotification": "",
 "SfxrGenerator": "",
 "SfxrGlobals": "",
 "ShapePolygon2D": "",
+"Task": "",
 "TextNotification": ""
 }
 
@@ -276,7 +318,11 @@ Overlay="*res://src/scripts/singletons/debug_overlay/overlay.gd"
 [debug]
 
 settings/fps/force_fps=75
+gdscript/warnings/shadowed_variable=false
+gdscript/warnings/incompatible_ternary=false
+gdscript/warnings/unused_signal=false
 gdscript/warnings/return_value_discarded=false
+gdscript/warnings/integer_division=false
 shapes/collision/max_contacts_displayed=0
 
 [display]
@@ -290,7 +336,7 @@ window/stretch/aspect="keep"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Godot-Utilities/plugin.cfg", "res://addons/Godoxel/plugin.cfg", "res://addons/godot_sfxr/plugin.cfg", "res://addons/wakatime/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Godot-Utilities/plugin.cfg", "res://addons/Godoxel/plugin.cfg", "res://addons/SingletonScriptsShortcut/plugin.cfg", "res://addons/Todo_Manager/plugin.cfg", "res://addons/godot-notes/plugin.cfg", "res://addons/godot_sfxr/plugin.cfg", "res://addons/project-statistics/plugin.cfg", "res://addons/todot/plugin.cfg", "res://addons/wakatime/plugin.cfg" )
 
 [input]
 
@@ -368,12 +414,17 @@ DEBUG_TRIGGER={
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":96,"unicode":0,"echo":false,"script":null)
  ]
 }
-demo_start_recording={
+demo_toggle_recording={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777229,"unicode":0,"echo":false,"script":null)
+ ]
+}
+demo_play_file={
 "deadzone": 0.5,
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777235,"unicode":0,"echo":false,"script":null)
  ]
 }
-demo_stop_recording={
+demo_load_file={
 "deadzone": 0.5,
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777236,"unicode":0,"echo":false,"script":null)
  ]
@@ -404,3 +455,7 @@ quality/filters/use_fxaa=true
 quality/filters/use_debanding=true
 environment/default_environment="res://default_env.tres"
 quality/dynamic_fonts/use_oversampling=false
+
+[statistics]
+
+force_include=PoolStringArray(  )

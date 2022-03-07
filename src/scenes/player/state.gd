@@ -7,10 +7,18 @@ var player: Player = null
 var activation_time: int = 0
 var disactivation_time: int = 0
 
-func _init(_player: Player):
-	player = _player
+var module_demo: PlayerModuleDemo
+var module_input: PlayerModuleInput
+var module_physics: PlayerModulePhysics
+
+func init(player: Player):
+	self.player = player
 	player_data = player.player_data
 	data = player.get_state_data(get_id())
+	
+	module_demo = player.module_demo
+	module_input = player.module_input
+	module_physics = player.module_physics
 
 func get_id() -> int:
 	return Player.STATE.NONE

@@ -186,13 +186,6 @@ __meta__ = {
 [node name="LayerSetter" type="Node2D" parent="Background"]
 script = ExtResource( 5 )
 
-[node name="Player" parent="." instance=ExtResource( 2 )]
-position = Vector2( -736, 352 )
-z_index = 4096
-z_as_relative = false
-demo_mode = 1
-demofile_path = "test.demo"
-
 [node name="UpgradePickup" parent="." instance=ExtResource( 15 )]
 position = Vector2( -576, 640 )
 
@@ -223,9 +216,12 @@ position = Vector2( -96, 256 )
 [node name="CubeEnemy4" parent="." instance=ExtResource( 4 )]
 position = Vector2( -528, 352 )
 
-[node name="CubeEnemy5" parent="." instance=ExtResource( 4 )]
-position = Vector2( -832, 352 )
-
 [node name="LayerSetter" type="Node2D" parent="."]
 script = ExtResource( 5 )
 z_layer = 5
+
+[node name="Player" parent="." instance=ExtResource( 2 )]
+position = Vector2( -600, 680 )
+z_index = 4096
+z_as_relative = false
+debug_mode = true

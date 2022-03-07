@@ -3,11 +3,13 @@ class_name ButtonPromptNotification
 
 var action_key: String
 
-static func create(text: String, action_key: String, auto_popup: bool = true) -> Notification:
+static func create(text: String, action_key: String, duration: float = Notification.LENGTH_NORMAL, auto_popup: bool = true) -> Notification:
 	var notification = get_instance()
 	notification.init(text, action_key)
 	if auto_popup:
 		notification.popup()
+	if duration != null:
+		notification.clear_after(duration)
 	return notification
 
 func init(text: String, action_key: String):

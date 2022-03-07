@@ -7,7 +7,7 @@ var direction: int = 1
 var shape: int
 var player: KinematicBody2DWithArea2D
 
-func init(_direction: int, _shape: int, colour: Color, _player: KinematicBody2DWithArea2D):
+func init(_direction: int, _shape: int, _colour: Color, _player: KinematicBody2DWithArea2D):
 	direction = _direction
 	shape = _shape
 	player = _player

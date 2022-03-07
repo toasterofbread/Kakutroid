@@ -3,11 +3,13 @@ class_name SceneNotification
 
 var scene: Node = null
 
-static func create(scene: Node, text: String = null, auto_popup: bool = true) -> TextNotification:
+static func create(scene: Node, text: String = null, duration: float = Notification.LENGTH_NORMAL, auto_popup: bool = true) -> TextNotification:
 	var notification = get_instance()
 	notification.init(scene, text)
 	if auto_popup:
 		notification.popup()
+	if duration != null:
+		notification.clear_after(duration)
 	return notification
 
 func init(scene: Node, text: String = null):
