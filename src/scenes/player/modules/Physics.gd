@@ -13,7 +13,7 @@ func _physics_process(delta: float):
 	elif velocity.y < player_data["MAX_FALL_SPEED"]:
 		vel_move_y(player_data["MAX_FALL_SPEED"], player_data["GRAVITY"] * delta)
 	
-	velocity = player.move_and_slide(velocity * player.scale, Vector2.UP) / player.scale
+	velocity = player.move_and_slide(velocity * player.global_scale, Vector2.UP) / player.global_scale
 	
 	# Emit landing particles
 	if player.get_slide_count() > 0 and player.is_on_floor() and not was_on_floor and previous_velocity.y >= 200.0:
@@ -44,11 +44,12 @@ func _physics_process(delta: float):
 	else:
 		air_time += delta
 	
-	Overlay.SET("On floor", player.is_on_floor())
-	Overlay.SET("On wall", player.is_on_wall())
-	Overlay.SET("Air time", air_time)
-	
 	was_on_floor = player.is_on_floor()
+	
+	if not player.ghost:
+		Overlay.SET("On floor", player.is_on_floor())
+		Overlay.SET("On wall", player.is_on_wall())
+		Overlay.SET("Air time", air_time)
 
 func can_fall() -> bool:
 	return !player.is_on_floor() and air_time > player_data["COYOTE_TIME"]

@@ -1,4 +1,4 @@
-extends KinematicBody2DWithArea2D
+extends Damageable
 class_name Player
 
 # - Signals -
@@ -11,7 +11,7 @@ enum UPGRADE { WALLJUMP }
 
 # - Export vars -
 export var debug_mode: bool = false
-export var silent: bool = false
+export var ghost: bool = false
 
 # - Modules -
 var module_demo: Node = null
@@ -31,8 +31,6 @@ onready var wind_sprite: AnimatedSprite = $WindSprite
 var states: Dictionary = {}
 var current_state: Node = null
 var facing: int = 1
-var health: float = null setget set_health
-var intangible: bool = false setget set_intangible
 var crouching: bool = false setget set_crouching
 var running: bool = false setget set_running
 var fast_falling: bool = null setget set_fast_falling
@@ -86,8 +84,6 @@ func emit_landing_particles(_texture_or_colour, _amount: int = 3) -> CPUParticle
 func get_state_data(_state_id: int) -> Dictionary:
 	return null
 func collect_upgrade(_upgrade_type: int):
-	return
-func damage(_type: int, _amount: float, _position: Vector2 = null):
 	return
 func play_sound(_sound_key: String):
 	return

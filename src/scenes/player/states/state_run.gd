@@ -51,7 +51,5 @@ func physics_process(delta):
 	
 	if sign(module_physics.velocity.x) != pad.x and sign(module_physics.velocity.x) != 0:
 		module_physics.vel_move_x(0, data["DECELERATION"] * delta)
-		Overlay.SET("DECEL", true)
 	else:
 		module_physics.vel_move_x(data["MAX_SPEED"] * pad.x, data["ACCELERATION"] * delta)
-		Overlay.SET("DECEL", false)

@@ -31,7 +31,7 @@ func _process(delta: float):
 	var collision: KinematicCollision2D = move_and_collide(Vector2(500.0 * direction, 0) * delta)
 	if collision:
 		
-		if Game.is_node_damageable(collision.collider):
+		if Damageable.is_node_damageable(collision.collider):
 			collision.collider.damage(Enums.SHAPE_DAMAGE_TYPES[shape], player.player_data["BASIC_PROJECTILE_DAMAGE"], collision.position)
 			queue_free()
 			return

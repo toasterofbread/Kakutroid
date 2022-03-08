@@ -129,10 +129,8 @@ func physics_process(delta):
 		module_physics.vel_move_x(0, DRIFT_DECELERATION * delta)
 	elif sign(module_physics.velocity.x) != pad_x and module_physics.velocity.x != 0:
 		module_physics.vel_move_x(0.0, DRIFT_DECELERATION * delta)
-		Overlay.SET("DECEL", true)
 	else:
 		module_physics.vel_move_x(DRIFT_MAX_SPEED * pad_x, DRIFT_ACCELERATION * delta)
-		Overlay.SET("DECEL", false)
 
 func player_data_changed():
 	run_mode = null

@@ -4,7 +4,7 @@
 [ext_resource path="res://src/scenes/framework/sprite_trail_emitter/SpriteTrailEmitter.tscn" type="PackedScene" id=2]
 [ext_resource path="res://src/scenes/player/Projectile.gd" type="Script" id=3]
 [ext_resource path="res://addons/godot_sfxr/SfxrStreamPlayer.gd" type="Script" id=4]
-[ext_resource path="res://assets/materials/gradient_shader.tres" type="Material" id=5]
+[ext_resource path="res://assets/resources/materials/gradient_shader.tres" type="Material" id=5]
 
 [sub_resource type="Gradient" id=1]
 offsets = PoolRealArray( 0, 0.439655, 1 )

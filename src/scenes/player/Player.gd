@@ -1,7 +1,6 @@
 extends Player
 
 func _ready():
-	
 #	module_demo = preload("res://src/scenes/player/modules/Demo.gd").new().init(self)
 #	module_input = preload("res://src/scenes/player/modules/Input.gd").new().init(self)
 #	module_physics = preload("res://src/scenes/player/modules/Physics.gd").new().init(self)
@@ -9,6 +8,10 @@ func _ready():
 	module_demo = PlayerModuleDemo.new().init(self)
 	module_input = PlayerModuleInput.new().init(self)
 	module_physics = PlayerModulePhysics.new().init(self)
+	
+	$Camera2D.current = !ghost
+	set_collision_layer_bit(1, !ghost)
+	enable_hyperlog = ghost
 	
 	add_child(module_demo)
 	add_child(module_input)
@@ -37,7 +40,6 @@ func _ready():
 	area.set_collision_mask_bit(19, true)
 	area.set_collision_mask_bit(3, true)
 	
-	Game.set_node_damageable(self)
 	Game.set_node_layer(self, Game.LAYERS.PLAYER)
 	Game.set_node_layer(landing_particles, Game.LAYERS.PLAYER, 1)
 	passive_heal_cap = player_data["MAX_HEALTH"]
@@ -75,10 +77,10 @@ func _process(delta: float):
 	if current_state != null:
 		current_state.process(delta)
 	
-	Overlay.SET("Health percentage", clamp(health / player_data["MAX_HEALTH"], 0.0, 1.0))
-	Overlay.SET("Velocity", module_physics.velocity)
-	Overlay.SET("State", Player.STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
-	Overlay.SET("Intangible", intangible)
+	if not ghost:
+		Overlay.SET("Health percentage", clamp(health / player_data["MAX_HEALTH"], 0.0, 1.0))
+		Overlay.SET("State", Player.STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
+		Overlay.SET("Intangible", intangible)
 	
 	current_shape_node.scale.x = 1.0 - abs(squeeze_amount_x)
 	current_shape_node.position.x = (CUBE_SIZE / -2) * (current_shape_node.scale.x - 1) * sign(squeeze_amount_x)
@@ -228,10 +230,7 @@ func get_state_data(state_id: int) -> Dictionary:
 func collect_upgrade(upgrade_type: int):
 	print("Collect upgrade: ", UPGRADE.keys()[upgrade_type])
 
-func damage(type: int, amount: float, position: Vector2 = null):
-	if amount <= 0.0:
-		return
-	
+func on_damage(type: int, amount: float, position: Vector2 = null):
 	passive_heal_cap = min(passive_heal_cap, (health - amount) + (player_data["MAX_HEALTH"] * player_data["PASSIVE_HEAL_PERCENTAGE"]))
 	
 	set_health(health - amount)
@@ -246,8 +245,7 @@ func damage(type: int, amount: float, position: Vector2 = null):
 			module_physics.velocity = (global_position - position).normalized() * player_data["KNOCKBACK_SPEED"]
 			set_intangible(true)
 
-func death(_type: int):
-	print("Player death")
+func on_death(_type: int):
 	play_sound("death")
 
 func set_intangible(value: bool, no_timer: bool = false):
@@ -291,11 +289,11 @@ func set_fast_falling(value: bool):
 	area.disabled = not fast_falling and not wind_sprite.visible
 
 func _on_area_body_entered(body: Node):
-	if (fast_falling or wind_sprite.visible) and Game.is_node_damageable(body):
+	if (fast_falling or wind_sprite.visible) and Damageable.is_node_damageable(body):
 		body.damage(Enums.DAMAGE_TYPE.FASTFALL, player_data["HIGHSPEED_COLLISION_DAMAGE"], global_position)
 
 func play_sound(sound_key: String):
-	if silent:
+	if ghost:
 		return
 	$Sounds.get_node(sound_key).play()
 

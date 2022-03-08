@@ -76,7 +76,7 @@ func respawn():
 	
 	state = STATE.NORMAL
 
-func _on_StaticBody2D_DAMAGE(type: int, amount: float, position: Vector2 = null):
+func _on_StaticBody2D_DAMAGED(type: int, amount: float, position: Vector2):
 	if type in damage_types and amount > 0.0:
 		destroy()
 

@@ -3,7 +3,6 @@ extends Node
 signal settings_changed(path, value)
 signal APPLICATION_QUIT()
 
-const DAMAGEABLE_GROUP_NAME: String = "damageable"
 const DEFAULT_CONFIG_PATH: String = "res://default_config.cfg"
 
 var other_data: Dictionary = null
@@ -38,16 +37,19 @@ func quit():
 			function = yield(function, "completed")
 	get_tree().quit()
 
-func set_node_damageable(node: Node, damageable: bool = true):
-	assert(node.has_method("damage"))
-	
-	if damageable:
-		node.add_to_group(DAMAGEABLE_GROUP_NAME)
-	elif not damageable:
-		node.remove_from_group(DAMAGEABLE_GROUP_NAME)
+#func set_node_damageable(node: Node, damageable: bool = true):
+#
+#	if damageable:
+#		assert("health" in node and node.health is float)
+#
+#		node.add_to_group(DAMAGEABLE_GROUP_NAME)
+#		HyperLog.log(node).text("health")
+#
+#	elif not damageable:
+#		node.remove_from_group(DAMAGEABLE_GROUP_NAME)
 
-func is_node_damageable(node: Node) -> bool:
-	return node.is_in_group(DAMAGEABLE_GROUP_NAME)
+#func is_node_damageable(node: Node) -> bool:
+#	return node.is_in_group(DAMAGEABLE_GROUP_NAME)
 
 # Z Layer system
 enum LAYERS {BACKGROUND, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER, WORLD}

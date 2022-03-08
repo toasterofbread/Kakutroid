@@ -34,10 +34,20 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/Godot-Utilities/Nodes/CustomDialog.gd"
 }, {
-"base": "ExPhysicsBodyArea2D",
+"base": "DamageableExPhysicsBodyArea2D",
 "class": "DamageProxy",
 "language": "GDScript",
 "path": "res://src/scripts/nodes/DamageProxy.gd"
+}, {
+"base": "KinematicBody2DWithArea2D",
+"class": "Damageable",
+"language": "GDScript",
+"path": "res://src/scripts/nodes/Damageable.gd"
+}, {
+"base": "ExPhysicsBodyArea2D",
+"class": "DamageableExPhysicsBodyArea2D",
+"language": "GDScript",
+"path": "res://src/scripts/nodes/DamageableExPhysicsBodyArea2D.gd"
 }, {
 "base": "Reference",
 "class": "ExArray",
@@ -144,6 +154,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/Godoxel/Util.gd"
 }, {
+"base": "Resource",
+"class": "InputDemo",
+"language": "GDScript",
+"path": "res://addons/Godot-Utilities/Resources/InputDemo.gd"
+}, {
 "base": "KinematicBody2D",
 "class": "KinematicBody2DWithArea2D",
 "language": "GDScript",
@@ -163,6 +178,11 @@ _global_script_classes=[ {
 "class": "List",
 "language": "GDScript",
 "path": "res://addons/todot/model/List.gd"
+}, {
+"base": "PanelContainer",
+"class": "LogContainer",
+"language": "GDScript",
+"path": "res://addons/hyperlog/log_container.gd"
 }, {
 "base": "Node",
 "class": "Model",
@@ -184,7 +204,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scripts/singletons/notification/Notification.gd"
 }, {
-"base": "KinematicBody2DWithArea2D",
+"base": "Damageable",
 "class": "Player",
 "language": "GDScript",
 "path": "res://src/scenes/player/Player.gdh"
@@ -248,6 +268,41 @@ _global_script_classes=[ {
 "class": "TextNotification",
 "language": "GDScript",
 "path": "res://src/scenes/ui/notifications/TextNotification.gd"
+}, {
+"base": "Control",
+"class": "Tracker",
+"language": "GDScript",
+"path": "res://addons/hyperlog/trackers/tracker.gd"
+}, {
+"base": "Tracker",
+"class": "TrackerAngle",
+"language": "GDScript",
+"path": "res://addons/hyperlog/trackers/tracker_angle.gd"
+}, {
+"base": "Tracker",
+"class": "TrackerBar",
+"language": "GDScript",
+"path": "res://addons/hyperlog/trackers/tracker_bar.gd"
+}, {
+"base": "Tracker",
+"class": "TrackerColor",
+"language": "GDScript",
+"path": "res://addons/hyperlog/trackers/tracker_color.gd"
+}, {
+"base": "Tracker",
+"class": "TrackerGraph",
+"language": "GDScript",
+"path": "res://addons/hyperlog/trackers/tracker_graph.gd"
+}, {
+"base": "Tracker",
+"class": "TrackerText",
+"language": "GDScript",
+"path": "res://addons/hyperlog/trackers/tracker_text.gd"
+}, {
+"base": "Resource",
+"class": "ValueTracker",
+"language": "GDScript",
+"path": "res://addons/hyperlog/value_tracker.gd"
 } ]
 _global_script_class_icons={
 "BrushPrefabs": "",
@@ -256,6 +311,8 @@ _global_script_class_icons={
 "ControlledCamera2D": "res://src/scripts/nodes/ControlledCamera2D/icon.png",
 "CustomDialog": "",
 "DamageProxy": "",
+"Damageable": "",
+"DamageableExPhysicsBodyArea2D": "",
 "ExArray": "",
 "ExPhysicsBodyArea2D": "",
 "ExTexture": "",
@@ -277,10 +334,12 @@ _global_script_class_icons={
 "GERainbow": "",
 "GERect": "",
 "GEUtils": "",
+"InputDemo": "",
 "KinematicBody2DWithArea2D": "",
 "LargeTextNotification": "",
 "LayerSetter": "",
 "List": "",
+"LogContainer": "",
 "Model": "",
 "NinePatchRectTextureButton": "",
 "NodeTrailEmitter": "",
@@ -297,7 +356,14 @@ _global_script_class_icons={
 "SfxrGlobals": "",
 "ShapePolygon2D": "",
 "Task": "",
-"TextNotification": ""
+"TextNotification": "",
+"Tracker": "",
+"TrackerAngle": "",
+"TrackerBar": "",
+"TrackerColor": "",
+"TrackerGraph": "",
+"TrackerText": "",
+"ValueTracker": ""
 }
 
 [application]
@@ -314,6 +380,7 @@ Enums="*res://src/scripts/singletons/Enums.gd"
 NotificationManager="*res://src/scripts/singletons/notification/NotificationDisplay.tscn"
 Game="*res://src/scripts/singletons/Game.gd"
 Overlay="*res://src/scripts/singletons/debug_overlay/overlay.gd"
+HyperLog="*res://addons/hyperlog/hyperlog.tscn"
 
 [debug]
 
@@ -336,7 +403,7 @@ window/stretch/aspect="keep"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Godot-Utilities/plugin.cfg", "res://addons/Godoxel/plugin.cfg", "res://addons/SingletonScriptsShortcut/plugin.cfg", "res://addons/Todo_Manager/plugin.cfg", "res://addons/godot-notes/plugin.cfg", "res://addons/godot_sfxr/plugin.cfg", "res://addons/project-statistics/plugin.cfg", "res://addons/todot/plugin.cfg", "res://addons/wakatime/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Godot-Utilities/plugin.cfg", "res://addons/SingletonScriptsShortcut/plugin.cfg", "res://addons/Todo_Manager/plugin.cfg", "res://addons/godot-notes/plugin.cfg", "res://addons/godot_sfxr/plugin.cfg", "res://addons/hyperlog/plugin.cfg", "res://addons/project-statistics/plugin.cfg", "res://addons/todot/plugin.cfg", "res://addons/wakatime/plugin.cfg" )
 
 [input]
 

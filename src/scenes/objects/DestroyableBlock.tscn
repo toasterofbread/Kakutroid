@@ -26,6 +26,7 @@ collision_layer = 524289
 script = ExtResource( 4 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+visible = false
 shape = SubResource( 1 )
 
 [node name="Area2D" type="Area2D" parent="."]
@@ -55,5 +56,5 @@ one_shot = true
 [node name="Tween" type="Tween" parent="."]
 
 [connection signal="texture_changed" from="." to="." method="_on_DestroyableBlock_texture_changed"]
-[connection signal="DAMAGE" from="StaticBody2D" to="." method="_on_StaticBody2D_DAMAGE"]
+[connection signal="DAMAGED" from="StaticBody2D" to="." method="_on_StaticBody2D_DAMAGED"]
 [connection signal="timeout" from="RespawnTimer" to="." method="respawn"]

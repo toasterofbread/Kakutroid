@@ -49,8 +49,8 @@
 
         "WALLJUMP_BOOST_Y": 0.0,
         "WALLJUMP_BOOST_Y_FAST": 150.0,
-        "WALLJUMP_BOOST_X": 200.0,
-        "WALLJUMP_BOOST_X_FAST": 300.0,
+        "WALLJUMP_BOOST_X": 150.0,
+        "WALLJUMP_BOOST_X_FAST": 250.0,
 
         "RUN_DISABLE_TIME": 0.25
     }

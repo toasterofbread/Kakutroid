@@ -1,18 +1,17 @@
-extends KinematicBody2D
+extends Damageable
 
 var velocity: Vector2 = Vector2.ZERO
 onready var data: Dictionary = Game.other_data["enemy_cube"]
 
 var facing: int = 1
-var health: float = 0.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	health = data["HEALTH"]
 	Game.set_node_layer(self, Game.LAYERS.ENEMY)
-	Game.set_node_damageable(self)
+#	Game.set_node_damageable(self)
 
-func damage(type: int, amount: float, _position: Vector2 = null):
+func on_damage(type: int, amount: float, _position: Vector2 = null):
 	health -= amount
 	if health <= 0.0:
 		death(type)
@@ -20,7 +19,7 @@ func damage(type: int, amount: float, _position: Vector2 = null):
 		$HurtSound.play()
 		$AnimationPlayer.play("damage")
 
-func death(_type: int):
+func on_death(_type: int):
 	set_physics_process(false)
 	set_process(false)
 	
@@ -45,5 +44,5 @@ func _physics_process(_delta: float):
 		$RayCastContainer.scale.x = facing
 
 func _on_DamageArea_body_entered(body: Node):
-	if health > 0.0 and body != self and Game.is_node_damageable(body):
+	if health > 0.0 and body != self and Damageable.is_node_damageable(body):
 		body.damage(Enums.DAMAGE_TYPE.CUBE, data["COLLISION_DAMAGE"], $DamageArea.global_position)
