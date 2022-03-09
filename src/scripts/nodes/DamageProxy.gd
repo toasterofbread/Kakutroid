@@ -1,3 +1,0 @@
-extends DamageableExPhysicsBodyArea2D
-class_name DamageProxy
-

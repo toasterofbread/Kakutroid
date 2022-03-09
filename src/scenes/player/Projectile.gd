@@ -32,7 +32,7 @@ func _process(delta: float):
 	if collision:
 		
 		if Damageable.is_node_damageable(collision.collider):
-			collision.collider.damage(Enums.SHAPE_DAMAGE_TYPES[shape], player.player_data["BASIC_PROJECTILE_DAMAGE"], collision.position)
+			Damageable.damage(collision.collider, Enums.SHAPE_DAMAGE_TYPES[shape], player.player_data["BASIC_PROJECTILE_DAMAGE"], collision.position)
 			queue_free()
 			return
 		

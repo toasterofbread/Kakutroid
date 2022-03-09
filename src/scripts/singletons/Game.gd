@@ -23,6 +23,9 @@ func _init():
 	
 	settings_file_path = get_from_user_dir("settings.cfg")
 
+func _enter_tree():
+	get_tree().connect("node_added", self, "_on_tree_node_added")
+
 func _exit_tree():
 	quitting = true
 
@@ -52,7 +55,7 @@ func quit():
 #	return node.is_in_group(DAMAGEABLE_GROUP_NAME)
 
 # Z Layer system
-enum LAYERS {BACKGROUND, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER, WORLD}
+enum LAYERS {BACKGROUND, UPGRADE_PICKUP, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER, WORLD, BLOCK}
 var layer_z_indices: Dictionary = null
 var max_layer_offset: int
 
@@ -130,3 +133,109 @@ func set_setting_split(category: String, option: String, value):
 func get_from_user_dir(path: String):
 	path = path.trim_prefix("/")
 	return user_dir_path + path
+
+# - Physics layer system -
+enum PHYSICS_LAYER {
+	WORLD, 
+	PLAYER, 
+	PLAYER_WEAPON, 
+	ENEMY, 
+	ENEMY_WEAPON, 
+	BACKGROUND, 
+	_7,
+	_8,
+	_9,
+	_10,
+	_11,
+	_12,
+	_13,
+	_14,
+	_15,
+	_16,
+	_17,
+	_18,
+	_19
+	WORLD_FASTFALL
+}
+const DISBALED_WORLD_LAYERS_META_NAME: String = "DISABLED_WORLD_LAYERS"
+const DISBALED_WORLD_MASKS_META_NAME: String = "DISABLED_WORLD_MASKS"
+const WORLD_PHYSICS_LAYERS: Array = [PHYSICS_LAYER.WORLD_FASTFALL]
+
+func set_world_layer_disabled(node: Node, world_layer: int, value: bool):
+	assert(world_layer in WORLD_PHYSICS_LAYERS)
+	
+	if node.has_meta(DISBALED_WORLD_LAYERS_META_NAME):
+		var disabled: Array = node.get_meta(DISBALED_WORLD_LAYERS_META_NAME)
+		if not value:
+			disabled.erase(world_layer)
+		elif not world_layer in disabled:
+			disabled.append(world_layer)
+	elif value:
+		node.set_meta(DISBALED_WORLD_LAYERS_META_NAME, [world_layer])
+
+func set_world_mask_disabled(node: Node, world_mask: int, value: bool):
+	assert(world_mask in WORLD_PHYSICS_LAYERS)
+	
+	if node.has_meta(DISBALED_WORLD_MASKS_META_NAME):
+		var disabled: Array = node.get_meta(DISBALED_WORLD_MASKS_META_NAME)
+		if not value:
+			disabled.erase(world_mask)
+		elif not world_mask in disabled:
+			disabled.append(world_mask)
+	elif value:
+		node.set_meta(DISBALED_WORLD_MASKS_META_NAME, [world_mask])
+
+func get_disabled_world_layers(node: Node) -> Array:
+	if not node.has_meta(DISBALED_WORLD_LAYERS_META_NAME):
+		return Array()
+	return node.get_meta(DISBALED_WORLD_LAYERS_META_NAME)
+
+func get_disabled_world_masks(node: Node) -> Array:
+	if not node.has_meta(DISBALED_WORLD_MASKS_META_NAME):
+		return Array()
+	return node.get_meta(DISBALED_WORLD_MASKS_META_NAME)
+
+func set_physics_layer(node: Node, layer: int, value: bool):
+	assert(is_node_physics_object(node))
+	assert(not layer in WORLD_PHYSICS_LAYERS)
+	
+	if layer == PHYSICS_LAYER.WORLD:
+		var disabled_world_layers: Array = get_disabled_world_layers(node)
+		for world_layer in WORLD_PHYSICS_LAYERS:
+			if world_layer in disabled_world_layers:
+				continue
+			node.set_collision_layer_bit(world_layer, value)
+	
+	node.set_collision_layer_bit(layer, value)
+
+func set_physics_mask(node: Node, mask: int, value: bool):
+	assert(is_node_physics_object(node))
+	assert(not mask in WORLD_PHYSICS_LAYERS)
+	
+	if mask == PHYSICS_LAYER.WORLD:
+		for world_layer in WORLD_PHYSICS_LAYERS:
+			if world_layer in get_disabled_world_masks(node):
+				continue
+			node.set_collision_mask_bit(world_layer, value)
+	
+	node.set_collision_mask_bit(mask, value)
+
+func set_physics_layers(node: Node, layers: Array, value: bool):
+	for layer in layers:
+		set_physics_layer(node, layer, value)
+
+func set_physics_masks(node: Node, masks: Array, value: bool):
+	for mask in masks:
+		set_physics_mask(node, mask, value)
+
+func is_node_physics_object(node: Node):
+	return node is Area2D or node is PhysicsBody2D or node is TileMap
+
+func _on_tree_node_added(node: Node):
+	if is_node_physics_object(node):
+		if node.get_collision_layer_bit(PHYSICS_LAYER.WORLD):
+			for world_layer in WORLD_PHYSICS_LAYERS:
+				assert(not node.get_collision_layer_bit(world_layer))
+				assert(not node.get_collision_mask_bit(world_layer))
+				node.set_collision_layer_bit(world_layer, true)
+				node.set_collision_mask_bit(world_layer, true)

@@ -1,4 +1,4 @@
-extends Damageable
+extends KinematicBody2DWithArea2D
 class_name Player
 
 # - Signals -
