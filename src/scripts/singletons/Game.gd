@@ -32,6 +32,9 @@ func _init():
 		save_file = SaveFile.new()
 		ResourceSaver.save("res://debug_save.tres", save_file)
 
+func _physics_process(_delta: float) -> void:
+	Overlay.SET("FPS", Engine.get_frames_per_second())
+
 func _enter_tree():
 	get_tree().connect("node_added", self, "_on_tree_node_added")
 
@@ -49,6 +52,9 @@ func quit():
 			function = yield(function, "completed")
 	ResourceSaver.save("res://debug_save.tres", save_file)
 	get_tree().quit()
+
+func get_layer_by_name(layer_name: String) -> int:
+	return LAYERS[layer_name]
 
 #func set_node_damageable(node: Node, damageable: bool = true):
 #

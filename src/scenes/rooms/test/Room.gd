@@ -23,12 +23,12 @@ func _on_CRUMBLE_DESTROYED(type: int) -> void:
 		tween.start()
 		
 		var functions: GDScriptFunctionState = Utils.yield_funcitons([
-			FallingTileMarker.crumble_tilemap(tilemap, 0),
-			FallingTileMarker.crumble_tilemap(tilemap, 1),
-			FallingTileMarker.crumble_tilemap(tilemap, 2)
+			TileMapCrumbleMarker.crumble_tilemap(tilemap, "left"),
+			TileMapCrumbleMarker.crumble_tilemap(tilemap, "right"),
+			TileMapCrumbleMarker.crumble_tilemap(tilemap, "center")
 		])
 		
-		while functions.is_valid():
+		while functions and functions.is_valid():
 			$WalljumpChamber/SfxrStreamPlayer.play()
 			yield(get_tree().create_timer(0.1), "timeout")
 		

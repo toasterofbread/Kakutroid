@@ -59,11 +59,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/Godot-Utilities/Classes/ExTexture.gd"
 }, {
-"base": "Node2D",
-"class": "FallingTileMarker",
-"language": "GDScript",
-"path": "res://src/scripts/nodes/FallingTileMarker.gd"
-}, {
 "base": "Node",
 "class": "GEAction",
 "language": "GDScript",
@@ -274,6 +269,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scenes/ui/notifications/TextNotification.gd"
 }, {
+"base": "TileMap",
+"class": "TileMapCrumbleMarker",
+"language": "GDScript",
+"path": "res://src/scripts/nodes/TileMapCrumbleMarker.gd"
+}, {
 "base": "Control",
 "class": "Tracker",
 "language": "GDScript",
@@ -320,7 +320,6 @@ _global_script_class_icons={
 "ExArray": "",
 "ExPhysicsBodyArea2D": "",
 "ExTexture": "",
-"FallingTileMarker": "",
 "GEAction": "",
 "GEAnimation": "",
 "GEBrighten": "",
@@ -363,6 +362,7 @@ _global_script_class_icons={
 "ShapePolygon2D": "",
 "Task": "",
 "TextNotification": "",
+"TileMapCrumbleMarker": "",
 "Tracker": "",
 "TrackerAngle": "",
 "TrackerBar": "",
@@ -411,6 +411,29 @@ window/stretch/aspect="keep"
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/Godot-Utilities/plugin.cfg", "res://addons/SingletonScriptsShortcut/plugin.cfg", "res://addons/Todo_Manager/plugin.cfg", "res://addons/godot-notes/plugin.cfg", "res://addons/godot_sfxr/plugin.cfg", "res://addons/hyperlog/plugin.cfg", "res://addons/project-statistics/plugin.cfg", "res://addons/todot/plugin.cfg", "res://addons/wakatime/plugin.cfg" )
+
+[importer_defaults]
+
+texture={
+"compress/bptc_ldr": 0,
+"compress/hdr_mode": 0,
+"compress/lossy_quality": 0.7,
+"compress/mode": 0,
+"compress/normal_map": 0,
+"detect_3d": true,
+"flags/anisotropic": false,
+"flags/filter": false,
+"flags/mipmaps": false,
+"flags/repeat": 0,
+"flags/srgb": 2,
+"process/HDR_as_SRGB": false,
+"process/fix_alpha_border": true,
+"process/invert_color": false,
+"process/premult_alpha": false,
+"size_limit": 0,
+"stream": false,
+"svg/scale": 1.0
+}
 
 [input]
 
