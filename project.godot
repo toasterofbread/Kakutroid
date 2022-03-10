@@ -239,6 +239,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scripts/nodes/RoomCollisionObject.gd"
 }, {
+"base": "Resource",
+"class": "SaveFile",
+"language": "GDScript",
+"path": "res://src/resources/SaveFile.gd"
+}, {
 "base": "Notification",
 "class": "SceneNotification",
 "language": "GDScript",
@@ -351,6 +356,7 @@ _global_script_class_icons={
 "PlayerModulePhysics": "",
 "PlayerState": "",
 "RoomCollisionObject": "",
+"SaveFile": "",
 "SceneNotification": "",
 "SfxrGenerator": "",
 "SfxrGlobals": "",

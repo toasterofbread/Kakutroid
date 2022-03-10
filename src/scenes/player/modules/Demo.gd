@@ -3,7 +3,15 @@ class_name PlayerModuleDemo
 
 signal PLAYBACK_FINISHED
 
-const DEMO_IGNORED_ACTIONS: Array = ["DEBUG_quit", "demo_toggle_recording", "demo_play_file", "demo_load_file"]
+const DEMO_IGNORED_ACTIONS: Array = [
+	"DEBUG_quit", 
+	"demo_toggle_recording", 
+	"demo_play_file", 
+	"demo_load_file",
+	"ui_accept",
+	"ui_home",
+	"ui_select"
+]
 const DEMOFILE_DIRECTORY: String = "res://assets/resources/input_demos/"
 
 onready var module_input: PlayerModuleInput = player.module_input
@@ -75,6 +83,7 @@ func set_recording(value: bool):
 	if recording:
 		demo_data = InputDemo.new()
 		demo_data.ignored_actions = DEMO_IGNORED_ACTIONS
+		demo_data.metadata["player_data"] = player.save_data
 	
 	if not recording and demo_data.get_frame_count() != 0:
 		

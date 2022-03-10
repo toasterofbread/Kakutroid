@@ -3,6 +3,10 @@ extends Area2D
 export(Player.UPGRADE) var type: int
 onready var particles: CPUParticles2D = $CPUParticles2D
 
+func _ready() -> void:
+	if Player.is_upgrade_unique(type) and Game.player.get_upgrade_amount(type) > 0:
+		queue_free()
+
 func _on_UpgradePickup_body_entered(body: Node):
 	body.collect_upgrade(type)
 	$Visual.visible = false

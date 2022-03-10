@@ -5,10 +5,12 @@ signal APPLICATION_QUIT()
 
 const DEFAULT_CONFIG_PATH: String = "res://default_config.cfg"
 
+var save_file: SaveFile = null
 var other_data: Dictionary = null
 var _config: ConfigFile = null
 var settings_file_path: String
 var user_dir_path: String
+var player: Player = null
 
 var quitting: bool = false
 
@@ -22,6 +24,13 @@ func _init():
 	user_dir_path = "user://" if user_dir_override == null else user_dir_override
 	
 	settings_file_path = get_from_user_dir("settings.cfg")
+	
+	# DEBUG
+	if File.new().file_exists("res://debug_save.tres"):
+		save_file = load("res://debug_save.tres")
+	else:
+		save_file = SaveFile.new()
+		ResourceSaver.save("res://debug_save.tres", save_file)
 
 func _enter_tree():
 	get_tree().connect("node_added", self, "_on_tree_node_added")
@@ -38,6 +47,7 @@ func quit():
 		var function = connection["target"].callv(connection["method"], connection["binds"])
 		while function is GDScriptFunctionState and function.is_valid():
 			function = yield(function, "completed")
+	ResourceSaver.save("res://debug_save.tres", save_file)
 	get_tree().quit()
 
 #func set_node_damageable(node: Node, damageable: bool = true):

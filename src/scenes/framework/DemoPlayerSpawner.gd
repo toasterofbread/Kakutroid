@@ -18,6 +18,9 @@ var alternation_index: int = 0
 func _ready():
 	$PreviewPlayer.queue_free()
 	
+	for demo in demo_resources:
+		demo.resave()
+	
 	yield(get_tree().create_timer(1), "timeout")
 	
 	for resource in demo_resources:
@@ -46,7 +49,11 @@ func _run():
 		player.modulate.a = 0.0
 		add_child(player)
 		player.global_transform = global_transform
-		player.module_demo.demo_data = get_next_demo()
+		
+		var demo: InputDemo = get_next_demo()
+		player.module_demo.demo_data = demo
+		if "player_data" in demo.metadata:
+			player.save_data = demo.metadata["player_data"].duplicate(true)
 		
 		var tween: Tween = tweens[players.size()]
 		players[player] = true

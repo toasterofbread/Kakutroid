@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://src/resources/SaveFile.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+data = {
+"player": {
+"upgrades": {
+0: {
+"acquired": 0,
+"enabled": true
+}
+}
+}
+}

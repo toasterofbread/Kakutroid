@@ -96,12 +96,10 @@ func process(delta):
 			player.change_state(Player.STATE.WALK)
 		
 		return
-	
 	if (!module_input.is_action_pressed("jump") and current_jump_time >= data["JUMP_MIN_DURATION"]) or player.is_on_ceiling():
 		current_jump_time = data["JUMP_MAX_DURATION"]
-	elif (player.is_squeezing_wall() or (player.is_on_wall() and EASY_WALLJUMP)) and module_input.is_action_just_pressed("jump"):
+	elif player.using_upgrade(Player.UPGRADE.WALLJUMP) and (player.is_squeezing_wall() or (player.is_on_wall() and EASY_WALLJUMP)) and module_input.is_action_just_pressed("jump"):
 		current_jump_time = 0.0
-		
 		if player.fast_falling:
 			player.play_wind_animation()
 			player.play_sound("super_walljump")

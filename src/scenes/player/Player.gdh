@@ -39,11 +39,7 @@ var physics_frame: int = 0
 # - Data -
 var data: Dictionary = Utils.load_json("res://data/player/default.json").result
 var player_data: Dictionary = data["general"]
-var save_data: Dictionary = {
-	"upgrades": {
-		UPGRADE.WALLJUMP: {"acquired": 1, "enabled": true}
-	}
-}
+var save_data: Dictionary = Game.save_file.get_dict("player")
 
 # - Shape -
 const SHAPE_TRANSITION_DURATION: float = 0.5
@@ -93,6 +89,10 @@ func play_wind_animation(_falling_only: bool = false):
 	return
 func using_upgrade(_upgrade: int) -> bool:
 	return null
+func get_upgrade_amount(_upgrade: int) -> int:
+	return null
+static func is_upgrade_unique(upgrade: int) -> bool:
+	return upgrade in [UPGRADE.WALLJUMP]
 
 # - Setter declarations -
 func set_health(_value: float):

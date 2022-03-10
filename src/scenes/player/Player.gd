@@ -2,6 +2,12 @@ extends Player
 
 onready var DMG: Damageable = Damageable.new(self, true)
 
+const DEBUG_SAVE_DATA: Dictionary = {
+	"upgrades": {
+		UPGRADE.WALLJUMP: {"acquired": 1, "enabled": true}
+	}
+}
+
 func _ready():
 	module_demo = PlayerModuleDemo.new().init(self)
 	module_input = PlayerModuleInput.new().init(self)
@@ -9,6 +15,7 @@ func _ready():
 	
 	$Camera2D.current = !ghost
 	Game.set_physics_layer(self, Game.PHYSICS_LAYER.PLAYER, !ghost)
+	area_disabled = ghost
 	
 	add_child(module_demo)
 	add_child(module_input)
@@ -30,9 +37,23 @@ func _ready():
 	squeeze_amount_x = 0
 	squeeze_amount_y = 0
 	
-	area.connect("body_entered", self, "_on_area_body_entered")
-	area.set_collision_mask_bit(19, true)
-	area.set_collision_mask_bit(3, true)
+	if not "upgrades" in save_data:
+		save_data["upgrades"] = {}
+		for upgrade in UPGRADE.values():
+			save_data["upgrades"][upgrade] = {"acquired": 0, "enabled": true}
+	
+	if not ghost:
+		area.connect("body_entered", self, "_on_area_body_entered")
+		area.set_collision_mask_bit(19, true)
+		area.set_collision_mask_bit(3, true)
+		
+		# TODO | Player spawning system
+		if Game.player == null:
+			Game.player = self
+		
+		# DEBUG
+		save_data = DEBUG_SAVE_DATA
+#		Game.save_file.set_dict("player", save_data)
 	
 	Game.set_node_layer(self, Game.LAYERS.PLAYER)
 	Game.set_node_layer(landing_particles, Game.LAYERS.PLAYER, 1)
@@ -48,14 +69,22 @@ func _process(delta: float):
 	if module_input.is_action_pressed("run"):
 		set_running(true)
 	
-	var health_percentage: float = DMG.health / player_data["MAX_HEALTH"]
-	if health_percentage > 0.0:
-		if health_percentage <= 0.3 and not sound_playing("low_health"):
-			if low_health_sound_wait_time >= 0.1 + (0.4 * (health_percentage / 0.3)):
-				play_sound("low_health")
-				low_health_sound_wait_time = 0.0
-			else:
-				low_health_sound_wait_time += delta
+	if not ghost:
+		var health_percentage: float = DMG.health / player_data["MAX_HEALTH"]
+		if health_percentage > 0.0:
+			if health_percentage <= 0.3 and not sound_playing("low_health"):
+				if low_health_sound_wait_time >= 0.1 + (0.4 * (health_percentage / 0.3)):
+					play_sound("low_health")
+					low_health_sound_wait_time = 0.0
+				else:
+					low_health_sound_wait_time += delta
+		
+		if (OS.get_ticks_msec() - last_damage_time) / 1000.0 > player_data["PASSIVE_HEAL_IDLE_TIME"] and DMG.health > 0.0:
+			Damageable.set_health(self, min(passive_heal_cap, DMG.health + (player_data["PASSIVE_HEAL_PERCENTAGE"] * player_data["MAX_HEALTH"] * delta / player_data["PASSIVE_HEAL_DURATION"])))
+	
+		Overlay.SET("Health percentage", clamp(DMG.health / player_data["MAX_HEALTH"], 0.0, 1.0))
+		Overlay.SET("State", Player.STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
+		Overlay.SET("Intangible", DMG.intangible)
 	
 	if wind_sprite.playing:
 		if module_physics.velocity != Vector2.ZERO and (!wind_sprite.get_meta("falling_only") or module_physics.velocity.y >= 0.0):
@@ -65,22 +94,13 @@ func _process(delta: float):
 		else:
 			wind_sprite.visible = false
 	
-	if (OS.get_ticks_msec() - last_damage_time) / 1000.0 > player_data["PASSIVE_HEAL_IDLE_TIME"] and DMG.health > 0.0:
-		Damageable.set_health(self, min(passive_heal_cap, DMG.health + (player_data["PASSIVE_HEAL_PERCENTAGE"] * player_data["MAX_HEALTH"] * delta / player_data["PASSIVE_HEAL_DURATION"])))
-	
 	if current_state != null:
 		current_state.process(delta)
-	
-	if not ghost:
-		Overlay.SET("Health percentage", clamp(DMG.health / player_data["MAX_HEALTH"], 0.0, 1.0))
-		Overlay.SET("State", Player.STATE.keys()[current_state.get_id()] if current_state != null else "NONE")
-		Overlay.SET("Intangible", DMG.intangible)
 	
 	current_shape_node.scale.x = 1.0 - abs(squeeze_amount_x)
 	current_shape_node.position.x = (CUBE_SIZE / -2) * (current_shape_node.scale.x - 1) * sign(squeeze_amount_x)
 	current_shape_node.scale.y = 1.0 - abs(squeeze_amount_y)
 	current_shape_node.position.y = (CUBE_SIZE / -2) * (current_shape_node.scale.y - 1) * sign(squeeze_amount_y)
-#	previous_velocity = velocity
 	
 	module_physics.previous_velocity = module_physics.velocity
 	
@@ -222,9 +242,13 @@ func get_state_data(state_id: int) -> Dictionary:
 	return data[Player.STATE.keys()[state_id].to_lower()]
 
 func collect_upgrade(upgrade_type: int):
-	print("Collect upgrade: ", UPGRADE.keys()[upgrade_type])
+	save_data["upgrades"][upgrade_type]["acquired"] += 1
 
 func on_damage(type: int, amount: float, position: Vector2 = null):
+	
+	if ghost:
+		return
+	
 	passive_heal_cap = min(passive_heal_cap, (DMG.health - amount) + (player_data["MAX_HEALTH"] * player_data["PASSIVE_HEAL_PERCENTAGE"]))
 	
 	Damageable.set_health(self, DMG.health - amount)
@@ -256,7 +280,7 @@ func _on_IntangibilityTimer_timeout():
 	set_intangible(false)
 
 func set_health(value: float):
-	if DMG.health == value:
+	if DMG.health == value or ghost:
 		return
 	
 	DMG.health = clamp(value, 0.0, player_data["MAX_HEALTH"])
@@ -279,11 +303,12 @@ func set_fast_falling(value: bool):
 	if fast_falling == value:
 		return
 	fast_falling = value
+	
 	set_collision_mask_bit(19, !fast_falling)
 	area.disabled = not fast_falling and not wind_sprite.visible
 
 func _on_area_body_entered(body: Node):
-	if (fast_falling or wind_sprite.visible) and Damageable.is_node_damageable(body):
+	if not ghost and (fast_falling or wind_sprite.visible) and Damageable.is_node_damageable(body):
 		Damageable.damage(body, Enums.DAMAGE_TYPE.FASTFALL, player_data["HIGHSPEED_COLLISION_DAMAGE"], global_position)
 
 func play_sound(sound_key: String):
@@ -304,12 +329,14 @@ func play_wind_animation(falling_only: bool = false):
 	yield(wind_sprite, "animation_finished")
 	area.disabled = not fast_falling
 	set_intangible(false, true)
-#	var awaiting: GDScriptFunctionState = Utils.remote_yield(wind_sprite, "animation_finished")
-#	while awaiting.is_valid():
-#		yield(get_tree(), "idle_frame")
 	
 	wind_sprite.visible = false
 	wind_sprite.playing = false
 
 func using_upgrade(upgrade: int) -> bool:
-	return save_data["upgrades"][upgrade]["acquired"] >= 1 and save_data["upgrades"][upgrade]["enabled"]
+	return get_upgrade_amount(upgrade) >= 1 and save_data["upgrades"][upgrade]["enabled"]
+
+func get_upgrade_amount(upgrade: int) -> int:
+	if not upgrade in save_data["upgrades"]:
+		return 0
+	return save_data["upgrades"][upgrade]["acquired"]
