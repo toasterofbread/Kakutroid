@@ -4,8 +4,16 @@ onready var crumble_blocks: Array = $WalljumpChamber/CrumbleBlocks.get_children(
 onready var tilemap: TileMap = $TileMap
 var crumble_triggered: bool = false
 
+#func _input(event: InputEvent) -> void:
+#	if event.is_action_pressed("DEBUG_TRIGGER"):
+#		tilemap.PulseBg(Game.player.global_position, 1)
+
 func _ready() -> void:
 	$WalljumpChamber/ColorRect.visible = true
+	Game.current_room = self
+
+func pulse_bg(origin: Vector2, tile: int, speed: float = 1.0, max_distance: float = -1.0, width: float = 50.0):
+	tilemap.PulseBG(origin, tile, speed, max_distance, width)
 
 func _on_CRUMBLE_DESTROYED(type: int) -> void:
 	for block in crumble_blocks:

@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/marble_bg_alt.png-03982cead8a82b227c704f0120ac8a8f.stex"
+path="res://.import/marble.png-f8e32bf158317b904ce20acd25552e96.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/packs/pixel-platformer-blocks/Tilemap/marble_bg_alt.png"
-dest_files=[ "res://.import/marble_bg_alt.png-03982cead8a82b227c704f0120ac8a8f.stex" ]
+source_file="res://assets/sprites/tilesets/marble.png"
+dest_files=[ "res://.import/marble.png-f8e32bf158317b904ce20acd25552e96.stex" ]
 
 [params]
 

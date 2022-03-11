@@ -4,6 +4,9 @@ onready var DMG: Damageable = Damageable.new(self, true, true)
 
 var velocity: Vector2 = Vector2.ZERO
 onready var data: Dictionary = Game.other_data["enemy_cube"]
+onready var raycast_side = $RayCastContainer/Side
+onready var raycast_bottom = $RayCastContainer/Bottom
+var raycast_bottom_float_frames: int = 0
 
 var facing: int = 1
 
@@ -25,6 +28,8 @@ func on_death(_type: int):
 	set_physics_process(false)
 	set_process(false)
 	
+	Game.current_room.pulse_bg(global_position, 2, 0.75, 150.0)
+	
 	$CollisionShape2D.queue_free()
 	$RayCastContainer.queue_free()
 	$Tween.interpolate_property($Sprite, "modulate:a", $Sprite.modulate.a, 0.0, 0.15, Tween.TRANS_SINE)
@@ -40,12 +45,17 @@ func _process(delta: float):
 
 func _physics_process(_delta: float):
 	move_and_slide(velocity, Vector2.UP)
-	if $RayCastContainer/Side.is_colliding() or not $RayCastContainer/Bottom.is_colliding():
+	if raycast_side.is_colliding() or raycast_bottom_float_frames >= 5:
+		raycast_bottom_float_frames = 0
 		velocity.x *= -1
 		facing *= -1
 		$RayCastContainer.scale.x = facing
+	
+	if not raycast_bottom.is_colliding():
+		raycast_bottom_float_frames += 1
+	else:
+		raycast_bottom_float_frames = 0
 
 func _on_DamageArea_body_entered(body: Node):
 	if DMG.health > 0.0 and body != self and Damageable.is_node_damageable(body):
 		Damageable.damage(body, Enums.DAMAGE_TYPE.CUBE, data["COLLISION_DAMAGE"], $DamageArea.global_position)
-#		body.damage(Enums.DAMAGE_TYPE.CUBE, data["COLLISION_DAMAGE"], $DamageArea.global_position)

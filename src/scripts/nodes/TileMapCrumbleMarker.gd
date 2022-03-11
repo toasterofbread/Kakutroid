@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS: Dictionary = {
 
 export var tilemap_path: NodePath
 export var key: String = "" setget set_key
+export var replace_with_tile: int = -1
 export(X_SORT_MODE) var x_sort_mode: int
 export(Y_SORT_MODE) var y_sort_mode: int
 export var despawn_time: float = 1.0
@@ -47,9 +48,9 @@ func crumble(cell_pos: Vector2, despawn_queue: ExArray = null):
 	var collision: CollisionShape2D = CollisionShape2D.new()
 	body.add_child(collision)
 	
-	var global_pos: Vector2 = to_global(map_to_world(cell_pos + Vector2(0, 1)))
+	
+	var global_pos: Vector2 = to_global(map_to_world(cell_pos + Vector2(1, 1)))
 	var tilemap_pos: Vector2 = tilemap.world_to_map(tilemap.to_local(global_pos))
-	set_cellv(cell_pos, -1)
 	
 	var sprite: Sprite = Utils.get_tilemap_tile_sprite(tilemap, tilemap_pos, false)
 	body.add_child(sprite)
@@ -67,7 +68,7 @@ func crumble(cell_pos: Vector2, despawn_queue: ExArray = null):
 	call_deferred("add_child", body)
 	yield(body, "tree_entered")
 	
-	tilemap.set_cellv(tilemap_pos, -1)
+	tilemap.set_cellv(tilemap_pos, replace_with_tile)
 	tilemap.update_bitmask_area(tilemap_pos)
 	
 	if despawn_time >= 0.0:

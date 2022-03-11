@@ -280,7 +280,7 @@ func _on_IntangibilityTimer_timeout():
 	set_intangible(false)
 
 func set_health(value: float):
-	if DMG.health == value or ghost:
+	if DMG.health == value:
 		return
 	
 	DMG.health = clamp(value, 0.0, player_data["MAX_HEALTH"])

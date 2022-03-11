@@ -10,7 +10,9 @@ var other_data: Dictionary = null
 var _config: ConfigFile = null
 var settings_file_path: String
 var user_dir_path: String
+
 var player: Player = null
+var current_room: Node = null # TODO
 
 var quitting: bool = false
 

@@ -10,5 +10,4 @@ addons/*
 
 # Mono
 .mono/
-*.sln
-*.csproj
+mono_crash*
