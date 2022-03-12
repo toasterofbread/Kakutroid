@@ -7,8 +7,11 @@ const PATH_SPLITTER: String = "/"
 export var data: Dictionary = {}
 
 func get_dict(path: String) -> Dictionary:
+	return get_dict_split(path.split(PATH_SPLITTER))
+
+func get_dict_split(path: Array) -> Dictionary:
 	var current: Dictionary = data
-	for item in path.split(PATH_SPLITTER):
+	for item in path:
 		if item in current:
 			current = current[item]
 		else:

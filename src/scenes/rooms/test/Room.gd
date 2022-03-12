@@ -1,7 +1,7 @@
-extends Node2D
+extends GameRoom
 
 onready var crumble_blocks: Array = $WalljumpChamber/CrumbleBlocks.get_children()
-onready var tilemap: TileMap = $TileMap
+#onready var tilemap: TileMap = $TileMap
 var crumble_triggered: bool = false
 
 #func _input(event: InputEvent) -> void:
@@ -9,11 +9,8 @@ var crumble_triggered: bool = false
 #		tilemap.PulseBg(Game.player.global_position, 1)
 
 func _ready() -> void:
+	._ready()
 	$WalljumpChamber/ColorRect.visible = true
-	Game.current_room = self
-
-func pulse_bg(origin: Vector2, tile: int, speed: float = 1.0, max_distance: float = -1.0, width: float = 50.0):
-	tilemap.PulseBG(origin, tile, speed, max_distance, width)
 
 func _on_CRUMBLE_DESTROYED(type: int) -> void:
 	for block in crumble_blocks:
@@ -30,7 +27,7 @@ func _on_CRUMBLE_DESTROYED(type: int) -> void:
 		tween.connect("tween_all_completed", tween, "queue_free")
 		tween.start()
 		
-		var functions: GDScriptFunctionState = Utils.yield_funcitons([
+		var functions: GDScriptFunctionState = Utils.yield_functions([
 			TileMapCrumbleMarker.crumble_tilemap(tilemap, "left"),
 			TileMapCrumbleMarker.crumble_tilemap(tilemap, "right"),
 			TileMapCrumbleMarker.crumble_tilemap(tilemap, "center")

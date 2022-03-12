@@ -1,6 +1,6 @@
 extends Player
 
-onready var DMG: Damageable = Damageable.new(self, true)
+onready var DMG: Damageable = Damageable.new(self)
 
 const DEBUG_SAVE_DATA: Dictionary = {
 	"upgrades": {
@@ -37,6 +37,7 @@ func _ready():
 	squeeze_amount_x = 0
 	squeeze_amount_y = 0
 	
+	save_data = Game.save_file.get_dict("player")
 	if not "upgrades" in save_data:
 		save_data["upgrades"] = {}
 		for upgrade in UPGRADE.values():

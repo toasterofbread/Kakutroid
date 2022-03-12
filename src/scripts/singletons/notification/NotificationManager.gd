@@ -62,7 +62,7 @@ func reposition_notifications():
 func clear_all():
 	for notification in container.get_children():
 		notification.clear()
-		yield(Utils.wait(0.1, true), "completed")
+		yield(get_tree().create_timer(0.1), "completed")
 
 func get_last_notification() -> Notification:
 	return container.get_children()[-1] if container.get_child_count() > 0 else null

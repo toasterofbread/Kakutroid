@@ -1,6 +1,6 @@
 extends KinematicBody2DWithArea2D
 
-onready var DMG: Damageable = Damageable.new(self, true, true)
+onready var DMG: Damageable = Damageable.new(self, true)
 
 var velocity: Vector2 = Vector2.ZERO
 onready var data: Dictionary = Game.other_data["enemy_cube"]
@@ -28,7 +28,7 @@ func on_death(_type: int):
 	set_physics_process(false)
 	set_process(false)
 	
-	Game.current_room.pulse_bg(global_position, 2, 0.75, 150.0)
+	Game.current_room.pulse_bg(global_position, Color.red, true, 10, 0.75, 150.0)
 	
 	$CollisionShape2D.queue_free()
 	$RayCastContainer.queue_free()
@@ -36,6 +36,7 @@ func on_death(_type: int):
 	$Tween.start()
 	$DeathSound.play()
 	$CPUParticles2D.emitting = true
+	
 	yield(Utils.yield_particle_completion($CPUParticles2D), "completed")
 	queue_free()
 

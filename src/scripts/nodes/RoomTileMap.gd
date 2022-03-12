@@ -21,10 +21,6 @@ func _ready() -> void:
 	
 	set_process(false)
 
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("DEBUG_TRIGGER"):
-		pulse_bg(Game.player.global_position, 2)
-
 var b: int = 0
 func _process(delta: float) -> void:
 	for cell in s.get_used_cells():

@@ -5,10 +5,10 @@ using System.Collections.Generic;
 [Tool]
 public class RoomTileMap : TileMap
 {
-	const int MAX_TILEMAP_SIZE = 10000;
 	private Node Game;
 	
 	[Export] private int[] foreground_tiles = {};
+	[Export] private int pulse_tile;
 	[Export] private int autofill_background_tile = -1;
 	[Export] private bool autofill_now {
 		get { return false; }
@@ -21,63 +21,64 @@ public class RoomTileMap : TileMap
 					GD.Print("Autofill completed");
 		}
 	}
-//	[Export] private bool add_collision_to_autofill {
-//		get { return false; }
-//		set {
-//			if (value)
-//				if (autofill_background_tile <= 0)
-//					GD.Print("autofill_background_tile is not set");
-//				else
-//					for (int x = 0; x < 12; x += 1) {
-//						for (int y = 0; y < 4; y += 1) {
-//							ConvexPolygonShape2D shape = new ConvexPolygonShape2D();
-//							shape.Points = new Vector2[]{
-//								new Vector2(0, 0),
-//								new Vector2(0, 18),
-//								new Vector2(18, 18),
-//								new Vector2(18, 0)
-//							};
-//							TileSet.TileAddShape(0, shape, new Transform2D(0.0F, new Vector2(0, 0)), false, new Vector2(12, 4));
-//						}
-//					}
-//		}
-//	}
+	
+	public const int MAX_TILEMAP_SIZE = 10000;
+	public const int MAX_PRIORITY = 100;
+	public const int MAX_PULSE_AMOUNT = 5;
+	public const int FRAMESKIP = 1;
 	
 	private TileMapData tilemap_data;
-	
-	public enum BG_COLOUR {
-		NORMAL
-	}
-	private const int BG_DEFAULT = 1;
-	private const float INF = Godot.Mathf.Inf;
-	
-	private List<RoomTileMapPulse> pulses = new List<RoomTileMapPulse>();
-	
-	private const int MAX_PULSE_AMOUNT = 5;
-	private const int FRAMESKIP = 1;
+	private float camera_max_distance;
 	private int skipped_frames = 0;
 	
-	private float camera_max_distance;
+	private List<int> available_pulse_tiles = new List<int>();
+	private List<RoomTileMapPulse>[] running_pulses = new List<RoomTileMapPulse>[MAX_PRIORITY + 1];
+	private int running_pulse_count = 0;
 	
-	public void PulseBG(Vector2 origin, int tile, float speed, float max_distance, float width) {
+	public void PulseBG(Vector2 origin, Color colour, bool force, int priority, float speed, float max_distance, float width) {
 		
-		Utils.assert(tile >= 0);
+		Utils.assert(priority >= 0 && priority <= MAX_PRIORITY);
 		
-		if (MAX_PULSE_AMOUNT >= 0 && pulses.Count >= MAX_PULSE_AMOUNT) {
+		// If the current amount of pulses meets the maximum, don't create another pulse
+		if (!force && MAX_PULSE_AMOUNT >= 0 && running_pulse_count >= MAX_PULSE_AMOUNT) {
 			return;
 		}
 		
+		// If max_distance is negative (infinite), use the camera_max_distance
 		if (max_distance <= 0) {
 			max_distance = camera_max_distance;
 		}
 		else {
+			// Use camera_max_distance instead of max_distance if it is smaller
 			max_distance = Math.Min(max_distance, camera_max_distance);
 		}
 		
-		pulses.Add(new RoomTileMapPulse(origin, tile, speed * 10.0F, max_distance, width));
+		// Get the tile ID to be used for this pulse
+		int tile;
+		
+		if (available_pulse_tiles.Count == 0) {
+			// Create new pulse tile if none are available
+			tile = CreateNewPulseTile(colour);
+		}
+		else {
+			// Get the last available tile ID and remove it from the pool
+			tile = available_pulse_tiles[available_pulse_tiles.Count - 1];
+			available_pulse_tiles.RemoveAt(available_pulse_tiles.Count - 1);
+			
+			// Set the tile's modulate to the passed colour
+			TileSet.TileSetModulate(tile, colour);
+		}
+		
+		// Create new Pulse and add it to the pulse list
+		if (running_pulses[priority] == null) {
+			running_pulses[priority] = new List<RoomTileMapPulse>();
+		}
+		
+		running_pulses[priority].Add(new RoomTileMapPulse(origin, tile, speed * 10.0F, max_distance, width));
+		running_pulse_count += 1;
 	}
 	
-	
+	// Fills every empty tile within the TileMap's used rect with the passed type
 	public void FillBackground(int tile_type) {
 		Rect2 used_rect = GetUsedRect();
 		
@@ -86,11 +87,6 @@ public class RoomTileMap : TileMap
 				
 				int current_type = GetCell(x, y);
 				
-//				// Skip cell if it's a foreground tile
-//				if (current_type >= 0 && Array.Exists(foreground_tiles, element => element == current_type)) {
-//					continue;
-//				}
-
 				// Skip cell if not empty
 				if (current_type != -1)
 					continue;
@@ -110,13 +106,15 @@ public class RoomTileMap : TileMap
 			return;
 		
 		Game = GetNode("/root/Game");
+		
+		// Generate and cache camera_max_distance and tilemap_data
 		camera_max_distance = GetCameraMaxDistance(((Node)Game.Get("player")).Get("camera") as Camera2D) * 1.5F;
+		tilemap_data = new TileMapData(this);
 		
 		ZIndex = 0;
 		ZAsRelative = false;
 		
-		tilemap_data = new TileMapData(this);
-		
+		// Set the z_index of each tile according to whether it's a foreground or background tile
 		var TileIds = TileSet.GetTilesIds();
 		foreach (int Tile in TileIds) {
 			if (!Array.Exists(foreground_tiles, element => element == Tile)) {
@@ -127,26 +125,32 @@ public class RoomTileMap : TileMap
 			}
 		}
 		
+		// Pre-create pulse tiles
+		for (int i = 0; i < MAX_PULSE_AMOUNT + 1; i += 1) {
+			available_pulse_tiles.Add(CreateNewPulseTile(new Color()));
+		}
+		
+		// Fill background if autofill_background_tile is set
 		if (autofill_background_tile >= 0) {
 			FillBackground(autofill_background_tile);
 		}
 		
+		// Begin pulse loop
 		PulseProcessLoop();
 	}
 	
 	private async void PulseProcessLoop() {
-//		Thread pulse_thread = new Thread();
+		Thread pulse_thread = new Thread();
 		while (true) {
-//			pulse_thread.Start(this, "ProcessPulse");
-//			pulse_thread.WaitToFinish();
-			ProcessPulse();
-			await ToSignal(GetTree(), "idle_frame");
+			float delta = (float)((await ToSignal(GetTree(), "idle_frame"))[0]);
+			pulse_thread.Start(this, "ProcessPulse", delta);
+			pulse_thread.WaitToFinish();
 		}
 	}
 	
-	private void ProcessPulse() {
+	private void ProcessPulse(float delta) {
 		
-		if (pulses.Count == 0) {
+		if (running_pulse_count == 0) {
 			skipped_frames = FRAMESKIP;
 			return;
 		}
@@ -170,11 +174,15 @@ public class RoomTileMap : TileMap
 			
 			// Iterate through each pulse until one changes this cell's type
 			int target_type = -1;
-			foreach (RoomTileMapPulse pulse in pulses) {
-				float distance = pulse.Origin.DistanceTo(cell_pos);
-				if (distance <= pulse.MaxDistance && Math.Abs(distance - pulse.CurrentDistance) <= pulse.Width) {
-					target_type = pulse.Tile;
-					break;
+			foreach (List<RoomTileMapPulse> priority in running_pulses) {
+				if (priority == null)
+					continue;
+				foreach (RoomTileMapPulse pulse in priority) {
+					float distance = pulse.Origin.DistanceTo(cell_pos);
+					if (distance <= pulse.MaxDistance && Math.Abs(distance - pulse.CurrentDistance) <= pulse.Width) {
+						target_type = pulse.Tile;
+						break;
+					}
 				}
 			}
 			
@@ -189,25 +197,44 @@ public class RoomTileMap : TileMap
 			}
 		}
 		
-		for (int i = 0; i < pulses.Count; i += 1) {
-			RoomTileMapPulse pulse = pulses[i];
-			
-			// Remove pulse if completed
-			if (pulse.Completed) {
-				pulses.RemoveAt(i);
-				i -= 1;
-			}
-			else {
-				// Progress pulse current distance by its speed
-				pulse.CurrentDistance += pulse.Speed * (float)(FRAMESKIP + 1);
+		foreach (List<RoomTileMapPulse> priority in running_pulses) {
+			if (priority == null)
+				continue;
+			for (int i = 0; i < priority.Count; i += 1) {
+				RoomTileMapPulse pulse = priority[i];
 				
-				if (pulse.CurrentDistance > pulse.MaxDistance + pulse.Width) {
+				// Remove pulse if completed
+				if (pulse.Completed) {
 					
-					// Flag pulse to be removed on the next frame
-					pulse.Completed = true;
+					// Return the pulse's tile ID to the available tile pool
+					available_pulse_tiles.Add(pulse.Tile);
+					
+					priority.RemoveAt(i);
+					running_pulse_count -= 1;
+					i -= 1;
+				}
+				else {
+					
+					// Progress pulse current distance by its speed, accounting for frameskip
+					pulse.CurrentDistance += pulse.Speed * (float)(FRAMESKIP + 1) * delta;
+					
+					if (pulse.CurrentDistance > pulse.MaxDistance + pulse.Width) {
+						
+						// Flag pulse to be removed on the next frame
+						// Removing it on this frame would leave uncleared pulse tiles
+						pulse.Completed = true;
+					}
 				}
 			}
 		}
+	}
+	
+	// Creates a new pulse tile with passed colour and returns the ID
+	private int CreateNewPulseTile(Color colour) {
+		int tile = TileSet.GetLastUnusedTileId();
+		TileSet.DuplicateTile(pulse_tile, tile);
+		TileSet.TileSetModulate(tile, colour);
+		return tile;
 	}
 	
 	private float GetCameraMaxDistance(Camera2D camera) {
@@ -216,7 +243,7 @@ public class RoomTileMap : TileMap
 	}
 	
 	// Contains data about a running pulse
-	private class RoomTileMapPulse: Reference {
+	private class RoomTileMapPulse {
 		public Vector2 Origin;
 		public int Tile;
 		public float Speed;
@@ -229,7 +256,7 @@ public class RoomTileMap : TileMap
 		public RoomTileMapPulse(Vector2 origin, int tile, float speed, float max_distance, float width) {
 			Origin = origin;
 			Tile = tile;
-			Speed = speed;
+			Speed = speed * 60.0F;
 			MaxDistance = max_distance;
 			Width = width;
 		}
@@ -239,7 +266,7 @@ public class RoomTileMap : TileMap
 	private class TileMapData: Reference {
 		
 		private TileMap tilemap;
-		private int[,] data = new int[MAX_TILEMAP_SIZE, MAX_TILEMAP_SIZE];
+		private int[,] data = null;
 		private int offset_x;
 		private int offset_y;
 		
@@ -250,6 +277,10 @@ public class RoomTileMap : TileMap
 		
 		public void Update() {
 			Rect2 used_rect = tilemap.GetUsedRect();
+			
+			if (data == null || used_rect.Size.x >= MAX_TILEMAP_SIZE || used_rect.Size.y >= MAX_TILEMAP_SIZE)
+				data = new int[(int)used_rect.Size.x, (int)used_rect.Size.y];
+			
 			offset_x = (int)used_rect.Position.x;
 			offset_y = (int)used_rect.Position.y;
 			for (int x = 0; x < used_rect.Size.x; x += 1) {

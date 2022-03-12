@@ -21,7 +21,7 @@ var max_health: float = 0.0
 var health: float = 0.0
 var intangible: bool = false
 
-func _init(_host: Node = null, autoconnect_signals: bool = true, enable_hyperlog: bool = false) -> void:
+func _init(_host: Node = null, enable_hyperlog: bool = false) -> void:
 	host = _host
 	
 	if host == null:
@@ -29,11 +29,11 @@ func _init(_host: Node = null, autoconnect_signals: bool = true, enable_hyperlog
 		host = self
 	else:
 		# Connect signals
-		if autoconnect_signals:
-			if host.has_method(DAMAGED_AUTOCONNECT_METHOD):
-				connect("DAMAGED", host, DAMAGED_AUTOCONNECT_METHOD)
-			if host.has_method(DEATH_AUTOCONNECT_METHOD):
-				connect("DEATH", host, DEATH_AUTOCONNECT_METHOD)
+#		if autoconnect_signals:
+#			if host.has_method(DAMAGED_AUTOCONNECT_METHOD):
+#				connect("DAMAGED", host, DAMAGED_AUTOCONNECT_METHOD)
+#			if host.has_method(DEATH_AUTOCONNECT_METHOD):
+#				connect("DEATH", host, DEATH_AUTOCONNECT_METHOD)
 		
 		# Override methods
 		for method_name in overridable_methods:
@@ -88,6 +88,7 @@ static func damage(node: Node, type: int, amount: float, position: Vector2):
 static func death(node: Node, type: int):
 	assert(is_node_damageable(node))
 	var DMG: Damageable = get_node_DMG(node)
+	node.remove_from_group(DAMAGEABLE_GROUP)
 	DMG.overridable_methods[DEATH_AUTOCONNECT_METHOD].call_func(type)
 	DMG.emit_signal("DEATH", type)
 

@@ -12,7 +12,7 @@ var settings_file_path: String
 var user_dir_path: String
 
 var player: Player = null
-var current_room: Node = null # TODO
+var current_room: GameRoom = null # TODO
 
 var quitting: bool = false
 
@@ -48,10 +48,7 @@ func _ready():
 
 func quit():
 	quitting = true
-	for connection in get_signal_connection_list("APPLICATION_QUIT"):
-		var function = connection["target"].callv(connection["method"], connection["binds"])
-		while function is GDScriptFunctionState and function.is_valid():
-			function = yield(function, "completed")
+	yield(Utils.call_signal_and_yield(self, "APPLICATION_QUIT"), "completed")
 	ResourceSaver.save("res://debug_save.tres", save_file)
 	get_tree().quit()
 

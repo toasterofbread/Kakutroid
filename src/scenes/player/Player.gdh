@@ -40,7 +40,7 @@ var physics_frame: int = 0
 # - Data -
 var data: Dictionary = Utils.load_json("res://data/player/default.json").result
 var player_data: Dictionary = data["general"]
-var save_data: Dictionary = Game.save_file.get_dict("player")
+var save_data: Dictionary
 
 # - Shape -
 const SHAPE_TRANSITION_DURATION: float = 0.5
