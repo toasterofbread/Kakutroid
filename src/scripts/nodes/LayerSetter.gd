@@ -1,7 +1,7 @@
 extends Node2D
 class_name LayerSetter
 
-export(Game.LAYERS) var z_layer: int = 0
+export(Game.LAYER) var z_layer: int = 0
 export var z_layer_offset: int = 0 setget set_z_layer_offset
 #export(Enums.CanvasLayers) var canvas_layer: int = 0
 export(Array, NodePath) var z_layer_nodes: = []

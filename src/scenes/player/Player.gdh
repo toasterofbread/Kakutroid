@@ -26,7 +26,7 @@ onready var trail_emitter: NodeTrailEmitter = $NodeTrailEmitter
 onready var landing_particles: CPUParticles2D = $LandingParticles
 onready var intangibility_timer: Timer = $IntangibilityTimer
 onready var wind_sprite: AnimatedSprite = $WindSprite
-onready var camera: Camera2D = $Camera2D
+onready var camera: ControlledCamera2D = $Camera
 
 # - Variables -
 var states: Dictionary = {}
@@ -36,11 +36,12 @@ var crouching: bool = false setget set_crouching
 var running: bool = false setget set_running
 var fast_falling: bool = null setget set_fast_falling
 var physics_frame: int = 0
+var paused: bool = null
 
 # - Data -
 var data: Dictionary = Utils.load_json("res://data/player/default.json").result
 var player_data: Dictionary = data["general"]
-var save_data: Dictionary
+var save_data: Dictionary = null
 
 # - Shape -
 const SHAPE_TRANSITION_DURATION: float = 0.5
@@ -94,6 +95,12 @@ func get_upgrade_amount(_upgrade: int) -> int:
 	return null
 static func is_upgrade_unique(upgrade: int) -> bool:
 	return upgrade in [UPGRADE.WALLJUMP]
+func is_paused() -> bool:
+	return null
+func camerachunk_entered(chunk: Node):
+	pass
+func camerachunk_exited(chunk: Node):
+	pass
 
 # - Setter declarations -
 func set_health(_value: float):

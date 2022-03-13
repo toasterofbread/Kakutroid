@@ -9,11 +9,17 @@ const DEBUG_SAVE_DATA: Dictionary = {
 }
 
 func _ready():
+	
+	if Game.player != self and not ghost:
+		queue_free()
+		return
+	
 	module_demo = PlayerModuleDemo.new().init(self)
 	module_input = PlayerModuleInput.new().init(self)
 	module_physics = PlayerModulePhysics.new().init(self)
 	
-	$Camera2D.current = !ghost
+	camera.current = !ghost
+	camera.pause_mode = Node.PAUSE_MODE_PROCESS
 	Game.set_physics_layer(self, Game.PHYSICS_LAYER.PLAYER, !ghost)
 	area_disabled = ghost
 	
@@ -56,8 +62,8 @@ func _ready():
 		save_data = DEBUG_SAVE_DATA
 #		Game.save_file.set_dict("player", save_data)
 	
-	Game.set_node_layer(self, Game.LAYERS.PLAYER)
-	Game.set_node_layer(landing_particles, Game.LAYERS.PLAYER, 1)
+	Game.set_node_layer(self, Game.LAYER.PLAYER)
+	Game.set_node_layer(landing_particles, Game.LAYER.PLAYER, 1)
 	passive_heal_cap = player_data["MAX_HEALTH"]
 	Damageable.set_health(self, player_data["MAX_HEALTH"])
 	set_fast_falling(false)
@@ -66,6 +72,9 @@ func _ready():
 	wind_sprite.visible = false
 
 func _process(delta: float):
+	
+	if is_paused():
+		return
 	
 	if module_input.is_action_pressed("run"):
 		set_running(true)
@@ -121,6 +130,10 @@ func _process(delta: float):
 		set_current_shape(Enums.SHAPE.CIRCLE)
 
 func _physics_process(delta: float):
+	
+	if is_paused():
+		return
+	
 	if current_state != null:
 		current_state.physics_process(delta)
 	physics_frame += 1
@@ -267,6 +280,20 @@ func on_damage(type: int, amount: float, position: Vector2 = null):
 func on_death(_type: int):
 	play_sound("death")
 
+func is_paused() -> bool:
+	return (get_tree().paused and paused == null) or paused
+
+var entered_camerachunks:  Array = []
+func camerachunk_entered(chunk: Node):
+	if not chunk in entered_camerachunks:
+		entered_camerachunks.append(chunk)
+
+func camerachunk_exited(chunk: Node):
+	entered_camerachunks.erase(chunk)
+	for connected_chunk in chunk.connected_chunks:
+		if connected_chunk in entered_camerachunks:
+			connected_chunk.enter()
+
 func set_intangible(value: bool, no_timer: bool = false):
 	if DMG.intangible == value:
 		return
@@ -338,6 +365,6 @@ func using_upgrade(upgrade: int) -> bool:
 	return get_upgrade_amount(upgrade) >= 1 and save_data["upgrades"][upgrade]["enabled"]
 
 func get_upgrade_amount(upgrade: int) -> int:
-	if not upgrade in save_data["upgrades"]:
+	if save_data == null or not upgrade in save_data["upgrades"]:
 		return 0
 	return save_data["upgrades"][upgrade]["acquired"]

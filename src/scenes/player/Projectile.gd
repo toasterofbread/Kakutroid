@@ -21,8 +21,8 @@ func _ready():
 		Enums.SHAPE.TRIANGLE:
 			sprite.texture = preload("res://assets/sprites/triangle.png")
 	
-	Game.set_node_layer(self, Game.LAYERS.PLAYER_WEAPON)
-	Game.set_node_layer(particles, Game.LAYERS.PLAYER, 1)
+	Game.set_node_layer(self, Game.LAYER.PLAYER_WEAPON)
+	Game.set_node_layer(particles, Game.LAYER.PLAYER, 1)
 	$FireSound.play()
 	$CPUParticles2D.texture = sprite.texture
 
@@ -31,8 +31,7 @@ func _process(delta: float):
 	var collision: KinematicCollision2D = move_and_collide(Vector2(500.0 * direction, 0) * delta)
 	if collision:
 		
-		if Damageable.is_node_damageable(collision.collider):
-			Damageable.damage(collision.collider, Enums.SHAPE_DAMAGE_TYPES[shape], player.player_data["BASIC_PROJECTILE_DAMAGE"], collision.position)
+		if Damageable.is_node_damageable(collision.collider) and Damageable.damage(collision.collider, Enums.SHAPE_DAMAGE_TYPES[shape], player.player_data["BASIC_PROJECTILE_DAMAGE"], collision.position):
 			queue_free()
 			return
 		

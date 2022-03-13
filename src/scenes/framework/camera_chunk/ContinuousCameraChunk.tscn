@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://src/scenes/framework/camera_chunk/ContinuousCameraChunk.gd" type="Script" id=1]
+
+[node name="ContinuousCameraChunk" type="ColorRect"]
+margin_right = 255.0
+margin_bottom = 255.0
+color = Color( 0, 1, 0.529412, 0.25098 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Limits" type="ColorRect" parent="."]
+margin_left = 286.0
+margin_right = 541.0
+margin_bottom = 255.0
+color = Color( 0.631373, 0.129412, 0.941176, 0.25098 )
+__meta__ = {
+"_edit_use_anchors_": false
+}

@@ -1,20 +1,27 @@
 extends Node
 
-signal settings_changed(path, value)
+signal SETTINGS_CHANGED(path, value)
 signal APPLICATION_QUIT()
+signal SAVEFILE_LOADED(savefile)
+signal ROOM_LOADED()
 
 const DEFAULT_CONFIG_PATH: String = "res://default_config.cfg"
+const DOOR_TRANSITION_PLAYER_OFFSET: float = 0.0
+
+onready var room_container: Node2D = Node2D.new()
 
 var save_file: SaveFile = null
 var other_data: Dictionary = null
 var _config: ConfigFile = null
 var settings_file_path: String
 var user_dir_path: String
+var rooms: Dictionary
 
-var player: Player = null
-var current_room: GameRoom = null # TODO
+var player: Player = preload("res://src/scenes/player/Player.tscn").instance()
+var current_room: GameRoom = null
 
 var quitting: bool = false
+var door_transitioning: bool = false
 
 func _init():
 	pause_mode = Node.PAUSE_MODE_PROCESS
@@ -34,6 +41,16 @@ func _init():
 		save_file = SaveFile.new()
 		ResourceSaver.save("res://debug_save.tres", save_file)
 
+func _ready():
+	load_settings()
+	
+	add_child(room_container)
+	
+	# Register and load all rooms
+	rooms = Utils.dir2dict("res://src/scenes/rooms/", Utils.DIR2DICT_MODES.SINGLE_LAYER_DIR, ["Room.tscn"])
+#	for room_id in rooms:
+#		rooms[room_id] = load(rooms[room_id])
+
 func _physics_process(_delta: float) -> void:
 	Overlay.SET("FPS", Engine.get_frames_per_second())
 
@@ -43,8 +60,101 @@ func _enter_tree():
 func _exit_tree():
 	quitting = true
 
-func _ready():
-	load_settings()
+func load_room(id: String):
+	if current_room != null:
+		current_room.queue_free()
+		yield(current_room, "tree_exited")
+	current_room = load(rooms[id]).instance()
+	room_container.add_child(current_room)
+#	yield(current_room, "ready")
+	current_room.init()
+	
+	if not player.is_inside_tree():
+		add_child(player)
+	
+	if current_room.player_path != null:
+		print(current_room.get_node(current_room.player_path).global_position)
+		player.global_position = current_room.get_node(current_room.player_path).global_position
+	player.camera.current = true
+
+func room_exists(id: String):
+	return id in rooms
+
+func load_savefile(path: String):
+	save_file = load(path)
+	emit_signal("SAVEFILE_LOADED", save_file)
+
+func door_entered(origin_door: Door):
+	if door_transitioning:
+		return
+	
+	door_transitioning = true
+	get_tree().paused = true
+	player.paused = true
+	
+	var player_offset: Vector2 = (origin_door.global_position - player.global_position - Vector2(DOOR_TRANSITION_PLAYER_OFFSET, 0)) * origin_door.scale
+	var player_pos: Vector2 = player.global_position
+	set_node_layer(player, LAYER.MENU)
+	
+	var tween: Tween = Tween.new()
+	add_child(tween)
+	player.camera.dim_colour = Color(0, 0, 0, 0)
+	player.camera.set_dim_layer(LAYER.WORLD, 1)
+	tween.interpolate_property(player.camera, "dim_colour:a", 0, 1, 0.25)
+	tween.start()
+	yield(tween, "tween_all_completed")
+	
+	# Free current room and instance new room
+	current_room.queue_free()
+	current_room = origin_door.target_room_instance
+	
+	# Add current room to container and wait for it to be ready
+	room_container.call_deferred("add_child", current_room)
+	yield(current_room, "ready")
+	
+	# Get the destination door from current room
+	assert(current_room.has_door(origin_door.target_door))
+	var destination_door: Door = current_room.get_door(origin_door.target_door)
+	
+	destination_door.set_locked(true, false)
+	destination_door.set_open(true, false)
+	
+	var spawn_point = origin_door.global_position - player_offset
+	var offset = current_room.global_position - destination_door.global_position
+	
+	current_room.global_position = player.global_position - destination_door.global_position + (player_offset * destination_door.scale)
+	
+	for camera_chunk in destination_door.camera_chunks:
+		camera_chunk.enter()
+	
+	var camera: ControlledCamera2D = player.camera
+	camera.follow_active = false
+	camera.follow_node_pos = false
+	camera.follow_pos = player.global_position
+	
+	tween.interpolate_property(camera.camera, "global_position", camera.global_position, camera.get_target_pos(), 1.0, Tween.TRANS_EXPO, Tween.EASE_IN_OUT)
+	tween.start()
+	yield(tween, "tween_all_completed")
+	
+	camera.follow_active = true
+	camera.follow_node_pos = true
+	
+	current_room.init()
+	
+	tween.interpolate_property(player.camera, "dim_colour:a", 1, 0, 0.25)
+	tween.start()
+	yield(tween, "tween_all_completed")
+	
+	tween.queue_free()
+	
+	set_node_layer(player, LAYER.PLAYER)
+	
+	get_tree().paused = false
+	
+	player.paused = null
+	door_transitioning = false
+	emit_signal("ROOM_LOADED")
+	destination_door.door_entered()
 
 func quit():
 	quitting = true
@@ -53,7 +163,8 @@ func quit():
 	get_tree().quit()
 
 func get_layer_by_name(layer_name: String) -> int:
-	return LAYERS[layer_name]
+	return LAYER[layer_name]
+
 
 #func set_node_damageable(node: Node, damageable: bool = true):
 #
@@ -70,20 +181,20 @@ func get_layer_by_name(layer_name: String) -> int:
 #	return node.is_in_group(DAMAGEABLE_GROUP_NAME)
 
 # Z Layer system
-enum LAYERS {BACKGROUND, UPGRADE_PICKUP, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER, WORLD, BLOCK}
+enum LAYER {BACKGROUND, UPGRADE_PICKUP, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER, DOOR, WORLD, BLOCK, MENU}
 var layer_z_indices: Dictionary = null
 var max_layer_offset: int
 
 func prepare_z_layers():
 	layer_z_indices = {}
 	
-	var indices_per_layer: int = int(abs(VisualServer.CANVAS_ITEM_Z_MIN - VisualServer.CANVAS_ITEM_Z_MAX) / len(LAYERS))
+	var indices_per_layer: int = int(abs(VisualServer.CANVAS_ITEM_Z_MIN - VisualServer.CANVAS_ITEM_Z_MAX) / len(LAYER))
 	if indices_per_layer % 2 == 0:
 		indices_per_layer -= 1
 	max_layer_offset = (indices_per_layer - 1) / 2
 	
 	var previous: int = VisualServer.CANVAS_ITEM_Z_MIN - (indices_per_layer / 2)
-	for layer in LAYERS.values():
+	for layer in LAYER.values():
 		layer_z_indices[layer] = previous + (indices_per_layer)
 		previous = layer_z_indices[layer]
 
@@ -142,7 +253,7 @@ func get_setting_split(category: String, option: String):
 	return _config.get_value(category, option)
 
 func set_setting_split(category: String, option: String, value):
-	emit_signal("settings_changed", category + "/" + option, value)
+	emit_signal("SETTINGS_CHANGED", category + "/" + option, value)
 	_config.set_value(category, option, value)
 
 func get_from_user_dir(path: String):
@@ -158,8 +269,8 @@ enum PHYSICS_LAYER {
 	ENEMY_WEAPON, 
 	BACKGROUND, 
 	_7,
-	_8,
-	_9,
+	CAMERA_CHUNK,
+	MAP_CHUNK,
 	_10,
 	_11,
 	_12,

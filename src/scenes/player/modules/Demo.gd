@@ -25,6 +25,9 @@ var playback_frame: int = 0
 var recording: bool = false setget set_recording
 
 func _process(_delta: float):
+	if player.is_paused():
+		return
+	
 	if player.debug_mode:
 		if Input.is_action_just_pressed("demo_toggle_recording"):
 			if playing:
@@ -59,6 +62,9 @@ func _process(_delta: float):
 					TextNotification.create("Loaded demo file. Frames: " + str(demo_data.get_frame_count()))
 
 func _physics_process(_delta: float):
+	if player.is_paused():
+		return
+	
 	if recording:
 		demo_data.record_inputs()
 	elif playing:

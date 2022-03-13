@@ -12,7 +12,7 @@ var event_override: InputEvent = null
 var joypad_icons_key: String = null
 
 func _ready():
-	Game.connect("settings_changed", self, "settings_changed")
+	Game.connect("SETTINGS_CHANGED", self, "settings_changed")
 	InputManager.connect("UPDATE_BUTTON_ICONS", self, "update_icon")
 	
 	if set_icon_on_ready:

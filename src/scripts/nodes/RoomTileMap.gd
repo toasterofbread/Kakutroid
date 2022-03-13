@@ -17,7 +17,7 @@ func _ready() -> void:
 	tileset.tile_set_modulate(0, modulate)
 	modulate = Color.white
 	for tile in tileset.get_tiles_ids():
-		tileset.tile_set_z_index(tile, Game.get_layer_z_index(Game.LAYERS.BACKGROUND if tile in BG_TILES else Game.LAYERS.WORLD))
+		tileset.tile_set_z_index(tile, Game.get_layer_z_index(Game.LAYER.BACKGROUND if tile in BG_TILES else Game.LAYER.WORLD))
 	
 	set_process(false)
 

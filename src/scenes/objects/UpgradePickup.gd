@@ -16,7 +16,7 @@ func _on_UpgradePickup_body_entered(body: Node):
 	# TODO
 	TextNotification.create("Upgrade acquired: Walljump").clear_after(Notification.LENGTH_NORMAL)
 	
-	Game.set_node_layer(self, Game.LAYERS.UPGRADE_PICKUP)
+	Game.set_node_layer(self, Game.LAYER.UPGRADE_PICKUP)
 	
 	particles.modulate = $Visual/Main.modulate
 	particles.emitting = true

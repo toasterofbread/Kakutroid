@@ -7,6 +7,7 @@ public class RoomTileMap : TileMap
 {
 	private Node Game;
 	
+	[Export] private bool init_on_ready = false;
 	[Export] private int[] foreground_tiles = {};
 	[Export] private int pulse_tile;
 	[Export] private int autofill_background_tile = -1;
@@ -22,6 +23,7 @@ public class RoomTileMap : TileMap
 		}
 	}
 	
+	private const String PULSE_TILE_NAME = "PULSE_TILE";
 	public const int MAX_TILEMAP_SIZE = 10000;
 	public const int MAX_PRIORITY = 100;
 	public const int MAX_PULSE_AMOUNT = 5;
@@ -35,9 +37,12 @@ public class RoomTileMap : TileMap
 	private List<RoomTileMapPulse>[] running_pulses = new List<RoomTileMapPulse>[MAX_PRIORITY + 1];
 	private int running_pulse_count = 0;
 	
+	public bool Initialised = false;
+	
 	public void PulseBG(Vector2 origin, Color colour, bool force, int priority, float speed, float max_distance, float width) {
 		
-		Utils.assert(priority >= 0 && priority <= MAX_PRIORITY);
+		Utils.assert(Initialised, "RoomTileMap must be initialised before use");
+		Utils.assert(priority >= 0 && priority <= MAX_PRIORITY, "Invalid priority value");
 		
 		// If the current amount of pulses meets the maximum, don't create another pulse
 		if (!force && MAX_PULSE_AMOUNT >= 0 && running_pulse_count >= MAX_PULSE_AMOUNT) {
@@ -100,16 +105,19 @@ public class RoomTileMap : TileMap
 		}
 	}
 	
+	public void SetCellvManual(Vector2 position, int tile) {
+		SetCellManual((int)position.x, (int)position.y, tile);
+	}
+	
+	public void SetCellManual(int x, int y, int tile) {
+		tilemap_data.UpdateTile(x, y, tile);
+		SetCell(x, y, tile);
+	}
+	
 	public override void _Ready() {
-		
-		if (Engine.EditorHint)
-			return;
-		
 		Game = GetNode("/root/Game");
-		
-		// Generate and cache camera_max_distance and tilemap_data
-		camera_max_distance = GetCameraMaxDistance(((Node)Game.Get("player")).Get("camera") as Camera2D) * 1.5F;
-		tilemap_data = new TileMapData(this);
+		if (Engine.EditorHint || Game.Get("current_room") == null)
+			return;
 		
 		ZIndex = 0;
 		ZAsRelative = false;
@@ -118,22 +126,47 @@ public class RoomTileMap : TileMap
 		var TileIds = TileSet.GetTilesIds();
 		foreach (int Tile in TileIds) {
 			if (!Array.Exists(foreground_tiles, element => element == Tile)) {
-				TileSet.TileSetZIndex(Tile, (int)Game.Call("get_layer_z_index", Game.Call("get_layer_by_name", "BACKGROUND")));
+				TileSet.TileSetZIndex(Tile, (int)Game.Call("get_layer_z_index", 0));
+//				TileSet.TileSetZIndex(Tile, (int)Game.Call("get_layer_z_index", Game.Call("get_layer_by_name", "BACKGROUND")));
 			}
 			else {
-				TileSet.TileSetZIndex(Tile, (int)Game.Call("get_layer_z_index", Game.Call("get_layer_by_name", "WORLD")));
+				TileSet.TileSetZIndex(Tile, (int)Game.Call("get_layer_z_index", 7));
+//				TileSet.TileSetZIndex(Tile, (int)Game.Call("get_layer_z_index", Game.Call("get_layer_by_name", "WORLD")));
+			}
+		}
+		
+		if (init_on_ready)
+			Init();
+	}
+	
+	public void Init() {
+		
+		if (Initialised)
+			return;
+		
+		// Generate and cache camera_max_distance and tilemap_data
+		camera_max_distance = GetCameraMaxDistance(((Node)Game.Get("player")).Get("camera") as Camera2D) * 1.5F;
+		tilemap_data = new TileMapData(this);
+		
+		// Add existing pulse tiles to the pool
+		foreach (int tile in TileSet.GetTilesIds()) {
+			if (TileSet.TileGetName(tile) == PULSE_TILE_NAME) {
+				available_pulse_tiles.Add(tile);
 			}
 		}
 		
 		// Pre-create pulse tiles
-		for (int i = 0; i < MAX_PULSE_AMOUNT + 1; i += 1) {
+		int precreate_amount = MAX_PULSE_AMOUNT - available_pulse_tiles.Count;
+		for (int i = 0; i < precreate_amount; i += 1) {
 			available_pulse_tiles.Add(CreateNewPulseTile(new Color()));
 		}
-		
+
 		// Fill background if autofill_background_tile is set
 		if (autofill_background_tile >= 0) {
 			FillBackground(autofill_background_tile);
 		}
+		
+		Initialised = true;
 		
 		// Begin pulse loop
 		PulseProcessLoop();
@@ -234,6 +267,7 @@ public class RoomTileMap : TileMap
 		int tile = TileSet.GetLastUnusedTileId();
 		TileSet.DuplicateTile(pulse_tile, tile);
 		TileSet.TileSetModulate(tile, colour);
+		TileSet.TileSetName(tile, PULSE_TILE_NAME);
 		return tile;
 	}
 	
@@ -272,10 +306,10 @@ public class RoomTileMap : TileMap
 		
 		public TileMapData(TileMap tilemap) {
 			this.tilemap = tilemap;
-			Update();
+			UpdateAll();
 		}
 		
-		public void Update() {
+		public void UpdateAll() {
 			Rect2 used_rect = tilemap.GetUsedRect();
 			
 			if (data == null || used_rect.Size.x >= MAX_TILEMAP_SIZE || used_rect.Size.y >= MAX_TILEMAP_SIZE)
@@ -288,6 +322,14 @@ public class RoomTileMap : TileMap
 					data[x, y] = tilemap.GetCell(x + offset_x, y + offset_y);
 				}
 			}
+		}
+		
+		public void UpdateTile(int x, int y, int tile) {
+			data[x - offset_x, y - offset_y] = tile;
+		}
+		
+		public void UpdateTilev(Vector2 position, int tile) {
+			UpdateTile((int)position.x, (int)position.y, tile);
 		}
 		
 		public int GetTile(int x, int y) {

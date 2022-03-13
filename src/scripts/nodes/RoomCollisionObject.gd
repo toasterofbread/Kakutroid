@@ -9,7 +9,7 @@ export var particle_colour: Color setget set_particle_colour, get_particle_colou
 export var particle_texture: StreamTexture = preload("res://assets/sprites/cube.png") setget set_particle_texture, get_particle_texture
 
 func _ready() -> void:
-	Game.set_node_layer(self, Game.LAYERS.WORLD)
+	Game.set_node_layer(self, Game.LAYER.WORLD)
 
 func set_particle_colour(value: Color):
 	particle_colour = value

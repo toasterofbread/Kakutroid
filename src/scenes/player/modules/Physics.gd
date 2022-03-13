@@ -8,6 +8,9 @@ var was_on_floor: bool = false
 
 func _physics_process(delta: float):
 	
+	if player.is_paused():
+		return
+	
 	if player.is_on_wall():
 		vel_move_y(player_data["MAX_FALL_SPEED_WALL"], player_data["GRAVITY_WALL"] * delta)
 	elif velocity.y < player_data["MAX_FALL_SPEED"]:

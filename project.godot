@@ -24,10 +24,20 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scenes/ui/notifications/ButtonPromptNotification.gd"
 }, {
+"base": "ColorRect",
+"class": "CameraChunk",
+"language": "GDScript",
+"path": "res://src/scenes/framework/camera_chunk/CameraChunk.gd"
+}, {
+"base": "CameraChunk",
+"class": "ContinuousCameraChunk",
+"language": "GDScript",
+"path": "res://src/scenes/framework/camera_chunk/ContinuousCameraChunk.gd"
+}, {
 "base": "Node2D",
 "class": "ControlledCamera2D",
 "language": "GDScript",
-"path": "res://src/scripts/nodes/ControlledCamera2D/ControlledCamera2D.gd"
+"path": "res://addons/Godot-Utilities/Nodes/ControlledCamera2D/ControlledCamera2D.gd"
 }, {
 "base": "WindowDialog",
 "class": "CustomDialog",
@@ -43,6 +53,21 @@ _global_script_classes=[ {
 "class": "DestroyableBlock",
 "language": "GDScript",
 "path": "res://src/scenes/objects/DestroyableBlock.gd"
+}, {
+"base": "CameraChunk",
+"class": "DiscreteCameraChunk",
+"language": "GDScript",
+"path": "res://src/scenes/framework/camera_chunk/DiscreteCameraChunk.gd"
+}, {
+"base": "ExPhysicsBodyArea2D",
+"class": "Door",
+"language": "GDScript",
+"path": "res://src/scenes/framework/Door.gdh"
+}, {
+"base": "Area2D",
+"class": "ExArea2D",
+"language": "GDScript",
+"path": "res://addons/Godot-Utilities/Nodes/ExArea2D.gd"
 }, {
 "base": "Reference",
 "class": "ExArray",
@@ -318,10 +343,15 @@ _global_script_class_icons={
 "BrushPrefabs": "",
 "ButtonIcon": "",
 "ButtonPromptNotification": "",
-"ControlledCamera2D": "res://src/scripts/nodes/ControlledCamera2D/icon.png",
+"CameraChunk": "",
+"ContinuousCameraChunk": "",
+"ControlledCamera2D": "res://addons/Godot-Utilities/Nodes/ControlledCamera2D/icon.png",
 "CustomDialog": "",
 "Damageable": "",
 "DestroyableBlock": "",
+"DiscreteCameraChunk": "",
+"Door": "",
+"ExArea2D": "",
 "ExArray": "",
 "ExPhysicsBodyArea2D": "",
 "ExTexture": "",
@@ -381,7 +411,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Kakutroid"
-run/main_scene="res://src/scenes/rooms/test/Room.tscn"
+run/main_scene="res://src/scenes/rooms/test_area/test/Room.tscn"
 config/icon="res://icon.png"
 
 [autoload]
@@ -545,6 +575,8 @@ demo_load_file={
 2d_physics/layer_4="Enemy"
 2d_physics/layer_5="Enemy weapon"
 2d_physics/layer_6="Background"
+2d_physics/layer_8="Camera chunk"
+2d_physics/layer_9="Map chunk"
 2d_physics/layer_20="World (fastfall bypass)"
 
 [physics]

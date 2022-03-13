@@ -4,7 +4,7 @@ export var tilemap_path: NodePath
 var tilemap: TileMap
 
 func _ready():
-	Game.set_node_layer(self, Game.LAYERS.BACKGROUND)
+	Game.set_node_layer(self, Game.LAYER.BACKGROUND)
 	
 	if has_node(tilemap_path):
 		tilemap = get_node(tilemap_path)

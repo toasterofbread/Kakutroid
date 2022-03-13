@@ -48,27 +48,26 @@ func crumble(cell_pos: Vector2, despawn_queue: ExArray = null):
 	var collision: CollisionShape2D = CollisionShape2D.new()
 	body.add_child(collision)
 	
-	
 	var global_pos: Vector2 = to_global(map_to_world(cell_pos + Vector2(1, 1)))
 	var tilemap_pos: Vector2 = tilemap.world_to_map(tilemap.to_local(global_pos))
 	
 	var sprite: Sprite = Utils.get_tilemap_tile_sprite(tilemap, tilemap_pos, false)
 	body.add_child(sprite)
 	body.scale = tilemap.scale
-	body.global_position = global_pos + sprite.get_rect().size / 2.0
+	body.global_position = global_pos + (sprite.get_rect().size / 2.0) - Vector2(16, 16)
 	
 	collision.shape = RectangleShape2D.new()
 	collision.shape.extents = sprite.get_rect().size / 2
 	
 	Game.set_physics_layer(body, Game.PHYSICS_LAYER.BACKGROUND, true)
 	Game.set_physics_masks(body, [Game.PHYSICS_LAYER.BACKGROUND, Game.PHYSICS_LAYER.WORLD], true)
-	Game.set_node_layer(self, Game.LAYERS.BACKGROUND)
+	Game.set_node_layer(self, Game.LAYER.BACKGROUND)
 	
 	visible = true
 	call_deferred("add_child", body)
 	yield(body, "tree_entered")
 	
-	tilemap.set_cellv(tilemap_pos, replace_with_tile)
+	tilemap.SetCellvManual(tilemap_pos, replace_with_tile)
 	tilemap.update_bitmask_area(tilemap_pos)
 	
 	if despawn_time >= 0.0:

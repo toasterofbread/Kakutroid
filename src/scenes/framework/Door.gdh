@@ -1,0 +1,55 @@
+extends ExPhysicsBodyArea2D
+class_name Door
+
+enum TYPE { CUBE }
+
+const DOOR_GROUP: String = "DOORS"
+const TYPE_DAMAGE_TYPES: Dictionary = {
+	TYPE.CUBE: [Enums.DAMAGE_TYPE.CUBE]
+}
+
+onready var DMG: Damageable = Damageable.new(self)
+
+export var target_room_id: String
+export var target_door: String
+export(Array, NodePath) var camera_chunks: Array = []
+export(TYPE) var door_type
+export var tilemap_path: NodePath = null setget set_tilemap_path
+export var foreground_tile: int = 0 setget set_foreground_tile
+export var background_tile: int = 1 setget set_background_tile
+
+var target_room_instance: Node2D = null
+
+var open: bool = false
+var locked: bool = false
+var visual: bool = true # TODO
+
+func on_damage(_type: int, _amount: float, _position: Vector2 = null) -> bool:
+	return false
+
+func close():
+	pass
+
+func set_open(_value: bool, _animate: bool = true):
+	pass
+
+func set_locked(_value: bool, _animate: bool = true):
+	pass
+
+func door_entered():
+	pass
+
+func update_colour():
+	pass
+
+func set_tilemap_path(_value: NodePath):
+	pass
+
+func set_foreground_tile(_value: int):
+	pass
+
+func set_background_tile(_value: int):
+	pass
+
+func _on_ActivationArea2D_body_entered(_body: Node) -> void:
+	pass

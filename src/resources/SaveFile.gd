@@ -2,6 +2,7 @@ extends Resource
 class_name SaveFile
 
 const PATH_SPLITTER: String = "/"
+const DEBUG_SAVE_PATH: String = "res://debug_save.tres"
 
 # Contains all save data
 export var data: Dictionary = {}

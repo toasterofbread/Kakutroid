@@ -1,21 +1,20 @@
 extends GameRoom
 
 onready var crumble_blocks: Array = $WalljumpChamber/CrumbleBlocks.get_children()
-#onready var tilemap: TileMap = $TileMap
 var crumble_triggered: bool = false
 
-#func _input(event: InputEvent) -> void:
-#	if event.is_action_pressed("DEBUG_TRIGGER"):
-#		tilemap.PulseBg(Game.player.global_position, 1)
-
 func _ready() -> void:
-	._ready()
 	$WalljumpChamber/ColorRect.visible = true
 
 func _on_CRUMBLE_DESTROYED(type: int) -> void:
+	var emit_pulse: bool = false
 	for block in crumble_blocks:
 		if block.state == DestroyableBlock.STATE.NORMAL:
 			block.destroy(type)
+			emit_pulse = true
+	
+	if emit_pulse:
+		pulse_bg($WalljumpChamber/PulseOrigin.global_position, Color.turquoise)
 	
 	if not crumble_triggered:
 		crumble_triggered = true

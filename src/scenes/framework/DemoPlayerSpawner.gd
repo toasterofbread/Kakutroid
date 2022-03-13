@@ -16,10 +16,10 @@ var tweens: Array
 var alternation_index: int = 0
 
 func _ready():
-	$PreviewPlayer.queue_free()
+	if Game.current_room == null:
+		return
 	
-	for demo in demo_resources:
-		demo.resave()
+	$PreviewPlayer.queue_free()
 	
 	yield(get_tree().create_timer(1), "timeout")
 	

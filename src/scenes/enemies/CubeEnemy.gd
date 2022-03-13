@@ -13,16 +13,17 @@ var facing: int = 1
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	DMG.health = data["HEALTH"]
-	Game.set_node_layer(self, Game.LAYERS.ENEMY)
+	Game.set_node_layer(self, Game.LAYER.ENEMY)
 #	Game.set_node_damageable(self)
 
-func on_damage(type: int, amount: float, _position: Vector2 = null):
+func on_damage(type: int, amount: float, _position: Vector2 = null) -> bool:
 	DMG.health -= amount
 	if DMG.health <= 0.0:
 		Damageable.death(self, type)
 	else:
 		$HurtSound.play()
 		$AnimationPlayer.play("damage")
+	return true
 
 func on_death(_type: int):
 	set_physics_process(false)

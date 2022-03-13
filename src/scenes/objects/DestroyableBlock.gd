@@ -25,7 +25,7 @@ onready var tween: Tween = $Tween
 
 func _ready():
 	_on_DestroyableBlock_texture_changed()
-	Game.set_node_layer(self, Game.LAYERS.BLOCK)
+	Game.set_node_layer(self, Game.LAYER.BLOCK)
 	
 	Game.set_physics_layer(static_body, Game.PHYSICS_LAYER.WORLD, not Enums.DAMAGE_TYPE.FASTFALL in damage_types)
 
