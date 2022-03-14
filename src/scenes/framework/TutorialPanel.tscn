@@ -1,0 +1,170 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://src/scenes/framework/TutorialPanel.gd" type="Script" id=1]
+[ext_resource path="res://src/scenes/ui/button_icon/ButtonIcon.tscn" type="PackedScene" id=2]
+
+[sub_resource type="Gradient" id=1]
+colors = PoolColorArray( 0, 0, 0, 0, 0, 0, 0, 1 )
+
+[sub_resource type="GradientTexture" id=2]
+gradient = SubResource( 1 )
+width = 32
+
+[sub_resource type="GradientTexture2D" id=3]
+gradient = SubResource( 1 )
+fill_from = Vector2( 0, 1 )
+fill_to = Vector2( 0, 0 )
+
+[sub_resource type="Gradient" id=4]
+offsets = PoolRealArray( 0.5, 1 )
+colors = PoolColorArray( 0, 0, 0, 0, 0, 0, 0, 1 )
+
+[sub_resource type="GradientTexture2D" id=5]
+gradient = SubResource( 4 )
+fill_to = Vector2( 1, 1 )
+
+[node name="TutorialPanel" type="Node2D"]
+script = ExtResource( 1 )
+player_area_path = null
+enabled_gradients = {
+"bottom": false,
+"left": false,
+"right": false,
+"top": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+modulate = Color( 1, 1, 1, 0.498039 )
+margin_right = 112.0
+margin_bottom = 32.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Background" type="ColorRect" parent="MarginContainer"]
+modulate = Color( 1, 1, 1, 0.498039 )
+margin_right = 112.0
+margin_bottom = 32.0
+color = Color( 0, 0, 0, 1 )
+
+[node name="Left" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+anchor_bottom = 1.0
+margin_left = -32.0
+texture = SubResource( 2 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Right" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 32.0
+texture = SubResource( 2 )
+expand = true
+flip_h = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Top" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+anchor_right = 1.0
+margin_top = -32.0
+texture = SubResource( 3 )
+expand = true
+flip_v = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Bottom" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = 32.0
+texture = SubResource( 3 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CornerLeftBottom" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = -32.0
+margin_bottom = 32.0
+texture = SubResource( 5 )
+expand = true
+flip_v = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CornerRightBottom" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 32.0
+margin_bottom = 32.0
+texture = SubResource( 5 )
+expand = true
+flip_h = true
+flip_v = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CornerLeftTop" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+margin_left = -32.0
+margin_top = -32.0
+texture = SubResource( 5 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CornerRightTop" type="TextureRect" parent="MarginContainer/Background"]
+visible = false
+anchor_left = 1.0
+anchor_right = 1.0
+margin_top = -32.0
+margin_right = 32.0
+texture = SubResource( 5 )
+expand = true
+flip_h = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+margin_right = 112.0
+margin_bottom = 32.0
+
+[node name="Spacer" type="Control" parent="MarginContainer/HBoxContainer"]
+margin_right = 10.0
+margin_bottom = 32.0
+rect_min_size = Vector2( 10, 0 )
+
+[node name="ButtonIcon" parent="MarginContainer/HBoxContainer" instance=ExtResource( 2 )]
+margin_left = 14.0
+margin_right = 38.0
+margin_bottom = 32.0
+rect_min_size = Vector2( 24, 24 )
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer"]
+margin_left = 42.0
+margin_top = 9.0
+margin_right = 112.0
+margin_bottom = 23.0
+size_flags_horizontal = 3
+text = "Text"
+align = 1

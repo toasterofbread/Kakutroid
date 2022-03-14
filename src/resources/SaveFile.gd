@@ -1,11 +1,21 @@
 extends Resource
 class_name SaveFile
 
+signal ABOUT_TO_SAVE()
+
 const PATH_SPLITTER: String = "/"
 const DEBUG_SAVE_PATH: String = "res://debug_save.tres"
 
 # Contains all save data
 export var data: Dictionary = {}
+
+func save(path: String = null) -> int:
+	assert((path != null and path.begins_with("res://")) or resource_path != "")
+	
+	if path == null:
+		return ResourceSaver.save(resource_path, self)
+	else:
+		return ResourceSaver.save(path, self)
 
 func get_dict(path: String) -> Dictionary:
 	return get_dict_split(path.split(PATH_SPLITTER))

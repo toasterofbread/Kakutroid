@@ -54,6 +54,9 @@ func clear_after(time: float):
 	timer.start(time)
 
 func clear():
+	if Game.quitting:
+		return
+	
 	if NotificationManager.left_to_right:
 		tween.interpolate_property(self, "rect_position:x", rect_position.x, rect_position.x - get_size().x, slide_time, Tween.TRANS_EXPO, Tween.EASE_OUT)
 	else:

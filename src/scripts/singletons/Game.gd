@@ -2,11 +2,10 @@ extends Node
 
 signal SETTINGS_CHANGED(path, value)
 signal APPLICATION_QUIT()
-signal SAVEFILE_LOADED(savefile)
-signal ROOM_LOADED()
+signal ABOUT_TO_SAVE()
 
 const DEFAULT_CONFIG_PATH: String = "res://default_config.cfg"
-const DOOR_TRANSITION_PLAYER_OFFSET: float = 0.0
+const DOOR_TRANSITION_PLAYER_OFFSET: float = 5.0
 
 onready var room_container: Node2D = Node2D.new()
 
@@ -34,16 +33,10 @@ func _init():
 	
 	settings_file_path = get_from_user_dir("settings.cfg")
 	
-	# DEBUG
-	if File.new().file_exists("res://debug_save.tres"):
-		save_file = load("res://debug_save.tres")
-	else:
-		save_file = SaveFile.new()
-		ResourceSaver.save("res://debug_save.tres", save_file)
+	load_savefile("res://debug_save.tres") # DEBUG
 
 func _ready():
 	load_settings()
-	
 	add_child(room_container)
 	
 	# Register and load all rooms
@@ -67,22 +60,32 @@ func load_room(id: String):
 	current_room = load(rooms[id]).instance()
 	room_container.add_child(current_room)
 #	yield(current_room, "ready")
-	current_room.init()
 	
 	if not player.is_inside_tree():
 		add_child(player)
 	
 	if current_room.player_path != null:
-		print(current_room.get_node(current_room.player_path).global_position)
 		player.global_position = current_room.get_node(current_room.player_path).global_position
 	player.camera.current = true
 
 func room_exists(id: String):
 	return id in rooms
 
-func load_savefile(path: String):
-	save_file = load(path)
-	emit_signal("SAVEFILE_LOADED", save_file)
+func load_savefile(path: String, create_if_nonexistent: bool = true) -> bool:
+	assert(path.begins_with("res://"))
+	if save_file and path == save_file.resource_path:
+		return true
+	
+	if ResourceLoader.exists(path):
+		save_file = load(path)
+	elif create_if_nonexistent:
+		save_file = SaveFile.new()
+		save_file.resource_path = path
+	else:
+		return false
+	
+	save_file.connect("ABOUT_TO_SAVE", self, "emit_signal", ["ABOUT_TO_SAVE"])
+	return true
 
 func door_entered(origin_door: Door):
 	if door_transitioning:
@@ -92,8 +95,7 @@ func door_entered(origin_door: Door):
 	get_tree().paused = true
 	player.paused = true
 	
-	var player_offset: Vector2 = (origin_door.global_position - player.global_position - Vector2(DOOR_TRANSITION_PLAYER_OFFSET, 0)) * origin_door.scale
-	var player_pos: Vector2 = player.global_position
+	var player_offset: Vector2 = ((origin_door.global_position - player.global_position) * origin_door.scale) - Vector2(DOOR_TRANSITION_PLAYER_OFFSET, 0)
 	set_node_layer(player, LAYER.MENU)
 	
 	var tween: Tween = Tween.new()
@@ -116,11 +118,10 @@ func door_entered(origin_door: Door):
 	assert(current_room.has_door(origin_door.target_door))
 	var destination_door: Door = current_room.get_door(origin_door.target_door)
 	
+	destination_door.set_block_signals(true)
 	destination_door.set_locked(true, false)
 	destination_door.set_open(true, false)
-	
-	var spawn_point = origin_door.global_position - player_offset
-	var offset = current_room.global_position - destination_door.global_position
+	destination_door.set_block_signals(false)
 	
 	current_room.global_position = player.global_position - destination_door.global_position + (player_offset * destination_door.scale)
 	
@@ -139,8 +140,6 @@ func door_entered(origin_door: Door):
 	camera.follow_active = true
 	camera.follow_node_pos = true
 	
-	current_room.init()
-	
 	tween.interpolate_property(player.camera, "dim_colour:a", 1, 0, 0.25)
 	tween.start()
 	yield(tween, "tween_all_completed")
@@ -153,13 +152,15 @@ func door_entered(origin_door: Door):
 	
 	player.paused = null
 	door_transitioning = false
-	emit_signal("ROOM_LOADED")
 	destination_door.door_entered()
 
 func quit():
 	quitting = true
 	yield(Utils.call_signal_and_yield(self, "APPLICATION_QUIT"), "completed")
-	ResourceSaver.save("res://debug_save.tres", save_file)
+	
+#	if save_file.resource_path == "res://debug_save.tres":
+#		save_file.save()
+	
 	get_tree().quit()
 
 func get_layer_by_name(layer_name: String) -> int:
@@ -353,6 +354,16 @@ func set_physics_layers(node: Node, layers: Array, value: bool):
 func set_physics_masks(node: Node, masks: Array, value: bool):
 	for mask in masks:
 		set_physics_mask(node, mask, value)
+
+func set_all_physics_layers(node: Node, value: bool):
+	for layer in PHYSICS_LAYER.values():
+		if not layer in WORLD_PHYSICS_LAYERS:
+			set_physics_layer(node, layer, value)
+
+func set_all_physics_masks(node: Node, value: bool):
+	for layer in PHYSICS_LAYER.values():
+		if not layer in WORLD_PHYSICS_LAYERS:
+			set_physics_mask(node, layer, value)
 
 func is_node_physics_object(node: Node):
 	return node is Area2D or node is PhysicsBody2D or node is TileMap

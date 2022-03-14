@@ -74,7 +74,7 @@ data = PoolByteArray( 47, 47, 46, 46, 46, 46, 46, 46, 46, 46, 46, 55, 83, 83, 83
 collision_layer = 1
 script = ExtResource( 1 )
 tilemap_path = null
-background_tile = 0
+background_tile = 1
 
 [node name="Cover" type="AnimatedSprite" parent="."]
 modulate = Color( 0.25098, 0.490196, 1, 1 )

@@ -1,6 +1,7 @@
 extends Notification
 class_name ButtonPromptNotification
 
+const MOVING_INTERACTION_BUTTON: String = "pad_up"
 var action_key: String
 
 static func create(text: String, action_key: String, duration: float = Notification.LENGTH_NORMAL, auto_popup: bool = true) -> Notification:

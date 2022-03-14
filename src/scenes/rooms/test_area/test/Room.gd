@@ -1,23 +1,25 @@
 extends GameRoom
 
+onready var tutorial_panel_fire: Node = $TutorialPanelFire
 onready var crumble_blocks: Array = $WalljumpChamber/CrumbleBlocks.get_children()
 var crumble_triggered: bool = false
 
 func _ready() -> void:
 	$WalljumpChamber/ColorRect.visible = true
+	
+	if "fire_tutorial_completed" in room_data and room_data["fire_tutorial_completed"]:
+		$TutorialPanelFire.queue_free()
+		tutorial_panel_fire = null
 
 func _on_CRUMBLE_DESTROYED(type: int) -> void:
-	var emit_pulse: bool = false
 	for block in crumble_blocks:
 		if block.state == DestroyableBlock.STATE.NORMAL:
 			block.destroy(type)
-			emit_pulse = true
-	
-	if emit_pulse:
-		pulse_bg($WalljumpChamber/PulseOrigin.global_position, Color.turquoise)
 	
 	if not crumble_triggered:
 		crumble_triggered = true
+		
+		pulse_bg($WalljumpChamber/PulseOrigin.global_position, Color.turquoise)
 		
 		var tween: Tween = Tween.new()
 		add_child(tween)
@@ -37,3 +39,9 @@ func _on_CRUMBLE_DESTROYED(type: int) -> void:
 			yield(get_tree().create_timer(0.1), "timeout")
 		
 		get_tree().create_timer(2.0).connect("timeout", $WalljumpChamber/DemoPlayerSpawner, "set", ["active", true])
+
+func _on_DoorRight_OPEN_CHANGED(open: bool) -> void:
+	if open and tutorial_panel_fire:
+		yield(tutorial_panel_fire.hide_tutorial(), "completed")
+		tutorial_panel_fire.queue_free()
+		room_data["fire_tutorial_completed"] = true

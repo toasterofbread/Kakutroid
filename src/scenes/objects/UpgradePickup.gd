@@ -14,7 +14,7 @@ func _on_UpgradePickup_body_entered(body: Node):
 	$SfxrStreamPlayer.play()
 	
 	# TODO
-	TextNotification.create("Upgrade acquired: Walljump").clear_after(Notification.LENGTH_NORMAL)
+	TextNotification.create("Upgrade acquired: Walljump", Notification.LENGTH_NORMAL)
 	
 	Game.set_node_layer(self, Game.LAYER.UPGRADE_PICKUP)
 	

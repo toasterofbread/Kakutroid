@@ -97,9 +97,9 @@ static func is_upgrade_unique(upgrade: int) -> bool:
 	return upgrade in [UPGRADE.WALLJUMP]
 func is_paused() -> bool:
 	return null
-func camerachunk_entered(chunk: Node):
+func camerachunk_entered(_chunk: Node):
 	pass
-func camerachunk_exited(chunk: Node):
+func camerachunk_exited(_chunk: Node):
 	pass
 
 # - Setter declarations -

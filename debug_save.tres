@@ -12,5 +12,11 @@ data = {
 "enabled": true
 }
 }
+},
+"rooms": {
+"test_area": {
+"test": {
+}
+}
 }
 }

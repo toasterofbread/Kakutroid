@@ -48,13 +48,13 @@ func crumble(cell_pos: Vector2, despawn_queue: ExArray = null):
 	var collision: CollisionShape2D = CollisionShape2D.new()
 	body.add_child(collision)
 	
-	var global_pos: Vector2 = to_global(map_to_world(cell_pos + Vector2(1, 1)))
+	var global_pos: Vector2 = to_global(map_to_world(cell_pos + Vector2(0, 0)))
 	var tilemap_pos: Vector2 = tilemap.world_to_map(tilemap.to_local(global_pos))
 	
 	var sprite: Sprite = Utils.get_tilemap_tile_sprite(tilemap, tilemap_pos, false)
 	body.add_child(sprite)
 	body.scale = tilemap.scale
-	body.global_position = global_pos + (sprite.get_rect().size / 2.0) - Vector2(16, 16)
+	body.global_position = global_pos + (sprite.get_rect().size / 2.0)# - Vector2(16, 16)
 	
 	collision.shape = RectangleShape2D.new()
 	collision.shape.extents = sprite.get_rect().size / 2

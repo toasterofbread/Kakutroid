@@ -64,6 +64,7 @@ func _ready():
 	
 	Game.set_node_layer(self, Game.LAYER.PLAYER)
 	Game.set_node_layer(landing_particles, Game.LAYER.PLAYER, 1)
+	Game.set_node_layer(trail_emitter, Game.LAYER.PLAYER, -1)
 	passive_heal_cap = player_data["MAX_HEALTH"]
 	Damageable.set_health(self, player_data["MAX_HEALTH"])
 	set_fast_falling(false)
@@ -76,8 +77,8 @@ func _process(delta: float):
 	if is_paused():
 		return
 	
-	if module_input.is_action_pressed("run"):
-		set_running(true)
+#	if module_input.is_action_pressed("run"):
+	set_running(true)
 	
 	if not ghost:
 		var health_percentage: float = DMG.health / player_data["MAX_HEALTH"]

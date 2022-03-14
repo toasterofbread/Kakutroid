@@ -5,6 +5,8 @@ export var player_path: NodePath = null
 
 var id: String = null setget , get_id
 var doors: Dictionary = {}
+var room_data: Dictionary
+
 onready var tilemap: TileMap = $TileMap # TEMP
 
 func _ready() -> void:
@@ -20,9 +22,8 @@ func _ready() -> void:
 		if is_a_parent_of(door):
 			assert(not door.name in doors)
 			doors[door.name] = door
-
-func init():
-	tilemap.Init()
+	
+	room_data = Game.save_file.get_dict("rooms/" + get_id())
 
 func has_door(door_name: String) -> bool:
 	return door_name in doors
@@ -30,8 +31,14 @@ func has_door(door_name: String) -> bool:
 func get_door(door_name: String) -> Door:
 	return doors[door_name]
 
-func pulse_bg(origin: Vector2, colour: Color, force: bool = false, priority: int = 0, speed: float = 1.0, max_distance: float = -1.0, width: float = 50.0):
-	tilemap.PulseBG(origin, colour, force, priority, speed, max_distance, width)
+func pulse_bg(origin: Vector2, colour: Color, force: bool = false, priority: int = 0) -> Reference:
+	# Settable properties on return object:
+	# Vector2 Origin;
+	# int Tile;
+	# float MaxDistance = -1.0F;
+	# float Width = 50.0F;
+	# float Speed = 1.0F;
+	return tilemap.PulseBG(origin, colour, force, priority)
 
 func get_id():
 	if id == null:

@@ -29,7 +29,9 @@ func on_death(_type: int):
 	set_physics_process(false)
 	set_process(false)
 	
-	Game.current_room.pulse_bg(global_position, Color.red, true, 10, 0.75, 150.0)
+	var pulse: Object = Game.current_room.pulse_bg(global_position, Color.red, true, 10)
+	pulse.Speed = 1.5
+	pulse.MaxDistance = 150.0
 	
 	$CollisionShape2D.queue_free()
 	$RayCastContainer.queue_free()

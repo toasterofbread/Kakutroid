@@ -45,11 +45,16 @@ func on_damage(type: int, _amount: float, _position: Vector2 = null) -> bool:
 		return false
 	elif not open:
 		set_open(true)
-		Game.current_room.pulse_bg($Cover/PulseOrigin.global_position, $Cover.modulate, true, 9, 0.75, 125.0)
+		var pulse: Object = Game.current_room.pulse_bg($Cover/PulseOrigin.global_position, $Cover.modulate, true, 9)
+		pulse.Speed = 0.75
+		pulse.MaxDistance = 125.0
 	return true
 
 func set_open(value: bool, animate: bool = true):
+	if open == value:
+		return
 	open = value
+	emit_signal("OPEN_CHANGED", open)
 	
 	if not visual:
 		return
@@ -66,8 +71,9 @@ func set_open(value: bool, animate: bool = true):
 func set_locked(value: bool, animate: bool = true):
 	if locked == value:
 		return
-	
 	locked = value
+	emit_signal("LOCKED_CHANGED", locked)
+	
 	$Cover.self_modulate = Color("2b2b2b") if locked else Color.white
 	if locked and open:
 		set_open(false, animate)
@@ -77,12 +83,12 @@ func set_locked(value: bool, animate: bool = true):
 
 func door_entered():
 	yield(get_tree().create_timer(0.1), "timeout")
+	set_locked(false, false)
 	if $FullDoorArea.overlaps_body(Game.player):
 		while true:
 			var body: Node = yield($FullDoorArea, "body_exited")
 			if body == Game.player:
 				break
-	set_locked(false, false)
 	set_open(false)
 
 func update_colour():
