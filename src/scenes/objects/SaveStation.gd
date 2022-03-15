@@ -7,7 +7,7 @@ export var tilemap: NodePath
 export var foreground_tile: int = 0 setget set_foreground_tile
 export var playing_sound: bool = false
 
-onready var player: Player = Game.player
+var player: Player
 onready var animation_player: AnimationPlayer = $AnimationPlayer
 onready var activation_area: ExArea2D = $ActivationArea
 
@@ -23,6 +23,7 @@ func _ready() -> void:
 	if Engine.editor_hint:
 		return
 	
+	player = Game.player
 	Game.set_node_layer($Slot, Game.LAYER.PLAYER, -10)
 	Game.set_node_layer($Frame, Game.LAYER.PLAYER, 10)
 	Game.set_node_layer($OverlayContainer, Game.LAYER.PLAYER, 10)

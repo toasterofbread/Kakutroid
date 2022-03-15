@@ -1,3 +1,4 @@
+#nullable enable
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -13,12 +14,15 @@ public class RoomTileMap : TileMap
 	[Export] private bool autofill_now {
 		get { return false; }
 		set {
-			if (value)
-				if (autofill_background_tile <= 0)
+			if (value) {
+				if (autofill_background_tile <= 0) {
 					GD.Print("autofill_background_tile is not set");
-				else
+				}
+				else {
 					FillBackground(autofill_background_tile);
 					GD.Print("Autofill completed");
+				}
+			}
 		}
 	}
 	
@@ -39,8 +43,9 @@ public class RoomTileMap : TileMap
 	private Thread pulse_process_thread;
 	private Reference pulse_process_awaiter = null;
 	
-	public RoomTileMapPulse PulseBG(Vector2 origin, Color colour, bool force, int priority) {
+	public RoomTileMapPulse? PulseBG(Vector2 origin, Color colour, bool force, int priority) {
 		Utils.assert(priority >= 0 && priority <= MAX_PRIORITY, "Invalid priority value");
+		Utils.assert(pulse_tile >= 0);
 		
 		// If the current amount of pulses meets the maximum, don't create another pulse
 		if (!force && MAX_PULSE_AMOUNT >= 0 && running_pulse_count >= MAX_PULSE_AMOUNT) {
@@ -125,7 +130,10 @@ public class RoomTileMap : TileMap
 		}
 		
 		// Generate and cache camera_max_distance and tilemap_data
-		camera_max_distance = GetCameraMaxDistance(((Node)Game.Get("player")).Get("camera") as Camera2D) * 1.5F;
+//		Node player = Game.Get("player") as Node;
+//		Camera2D camera = player.Get("camera") as Camera2D;
+//		var distance = 
+		camera_max_distance = GetCameraMaxDistance() * 1.5F;
 		tilemap_data = new TileMapData(this);
 		
 		// Add existing pulse tiles to the pool
@@ -135,10 +143,12 @@ public class RoomTileMap : TileMap
 			}
 		}
 		
-		// Pre-create pulse tiles
-		int precreate_amount = MAX_PULSE_AMOUNT - available_pulse_tiles.Count;
-		for (int i = 0; i < precreate_amount; i += 1) {
-			available_pulse_tiles.Add(CreateNewPulseTile(new Color()));
+		if (pulse_tile >= 0) {
+			// Pre-create pulse tiles
+			int precreate_amount = MAX_PULSE_AMOUNT - available_pulse_tiles.Count;
+			for (int i = 0; i < precreate_amount; i += 1) {
+				available_pulse_tiles.Add(CreateNewPulseTile(new Color()));
+			}
 		}
 
 		// Fill background if autofill_background_tile is set
@@ -273,9 +283,9 @@ public class RoomTileMap : TileMap
 		return tile;
 	}
 	
-	private float GetCameraMaxDistance(Camera2D camera) {
+	private float GetCameraMaxDistance() {
 		Vector2 view_size = GetViewportRect().Size / GetCanvasTransform().Scale;
-		return (float)(Math.Sqrt(Math.Pow(view_size.x / 2.0F, 2.0F) + Math.Pow(view_size.y / 2.0F, 2.0F)));
+		return (float)Math.Sqrt(Math.Pow(view_size.x / 2.0, 2.0) + Math.Pow(view_size.y / 2.0, 2.0));
 	}
 	
 	// Contains data about a running pulse

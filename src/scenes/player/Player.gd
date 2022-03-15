@@ -65,6 +65,13 @@ func _ready():
 	Game.set_node_layer(self, Game.LAYER.PLAYER)
 	Game.set_node_layer(landing_particles, Game.LAYER.PLAYER, 1)
 	Game.set_node_layer(trail_emitter, Game.LAYER.PLAYER, -1)
+	
+	Game.set_all_physics_layers(self, false)
+	Game.set_all_physics_masks(self, false)
+#	ghost = true
+	Game.set_physics_layer(self, Game.PHYSICS_LAYER.GHOST_PLAYER if ghost else Game.PHYSICS_LAYER.PLAYER, true)
+	Game.set_physics_masks(self, [Game.PHYSICS_LAYER.WORLD, Game.PHYSICS_LAYER.CAMERA_CHUNK], !ghost)
+	
 	passive_heal_cap = player_data["MAX_HEALTH"]
 	Damageable.set_health(self, player_data["MAX_HEALTH"])
 	set_fast_falling(false)
@@ -303,7 +310,8 @@ func set_intangible(value: bool, no_timer: bool = false):
 	if DMG.intangible and not no_timer:
 		intangibility_timer.start(player_data["HIT_INTANGIBILITY_DURATION"])
 	
-	set_collision_layer_bit(1, !DMG.intangible)
+	if !ghost:
+		Game.set_physics_layer(self, Game.PHYSICS_LAYER.PLAYER, !DMG.intangible)
 
 func _on_IntangibilityTimer_timeout():
 	set_intangible(false)
@@ -333,7 +341,7 @@ func set_fast_falling(value: bool):
 		return
 	fast_falling = value
 	
-	set_collision_mask_bit(19, !fast_falling)
+	set_collision_mask_bit(19, !fast_falling and !ghost)
 	area.disabled = not fast_falling and not wind_sprite.visible
 
 func _on_area_body_entered(body: Node):

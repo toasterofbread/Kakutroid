@@ -65,7 +65,7 @@ func load_room(id: String):
 		add_child(player)
 	
 	if current_room.player_path != null:
-		player.global_position = current_room.get_node(current_room.player_path).global_position
+		player.global_transform = current_room.get_node(current_room.player_path).global_transform
 	player.camera.current = true
 
 func room_exists(id: String):
@@ -269,7 +269,7 @@ enum PHYSICS_LAYER {
 	ENEMY, 
 	ENEMY_WEAPON, 
 	BACKGROUND, 
-	_7,
+	GHOST_PLAYER,
 	CAMERA_CHUNK,
 	MAP_CHUNK,
 	_10,

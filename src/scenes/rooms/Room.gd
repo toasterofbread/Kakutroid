@@ -24,6 +24,12 @@ func _ready() -> void:
 			doors[door.name] = door
 	
 	room_data = Game.save_file.get_dict("rooms/" + get_id())
+	
+	yield(self, "ready")
+	ready()
+
+func ready():
+	pass
 
 func has_door(door_name: String) -> bool:
 	return door_name in doors

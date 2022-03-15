@@ -8,6 +8,7 @@ addons/*
 # Addon exceptions
 !addons/Godot-Utilities
 
-# Mono
+# Mono-specific ignores
 .mono/
-mono_crash*
+data_*/
+mono_crash.*.json
