@@ -20,7 +20,6 @@ func _ready():
 	
 	camera.current = !ghost
 	camera.pause_mode = Node.PAUSE_MODE_PROCESS
-	Game.set_physics_layer(self, Game.PHYSICS_LAYER.PLAYER, !ghost)
 	area_disabled = ghost
 	
 	add_child(module_demo)
@@ -66,11 +65,13 @@ func _ready():
 	Game.set_node_layer(landing_particles, Game.LAYER.PLAYER, 1)
 	Game.set_node_layer(trail_emitter, Game.LAYER.PLAYER, -1)
 	
+	if ghost:
+		background = true
 	Game.set_all_physics_layers(self, false)
 	Game.set_all_physics_masks(self, false)
-#	ghost = true
-	Game.set_physics_layer(self, Game.PHYSICS_LAYER.GHOST_PLAYER if ghost else Game.PHYSICS_LAYER.PLAYER, true)
-	Game.set_physics_masks(self, [Game.PHYSICS_LAYER.WORLD, Game.PHYSICS_LAYER.CAMERA_CHUNK], !ghost)
+	Game.set_physics_layer(self, get_player_layer(), true)
+	Game.set_physics_mask(self, Game.PHYSICS_LAYER.CAMERA_CHUNK, !ghost)
+	Game.set_physics_mask(self, get_world_mask(), true)
 	
 	passive_heal_cap = player_data["MAX_HEALTH"]
 	Damageable.set_health(self, player_data["MAX_HEALTH"])
@@ -377,3 +378,25 @@ func get_upgrade_amount(upgrade: int) -> int:
 	if save_data == null or not upgrade in save_data["upgrades"]:
 		return 0
 	return save_data["upgrades"][upgrade]["acquired"]
+
+func set_background(value: bool):
+	if background == value:
+		return
+	
+	var old_layer: bool = get_collision_layer_bit(get_player_layer())
+	var old_mask: bool = get_collision_mask_bit(get_world_mask())
+	Game.set_physics_layer(self, get_player_layer(), false)
+	Game.set_physics_mask(self, get_world_mask(), false)
+	
+	background = value
+	
+	Game.set_physics_layer(self, get_player_layer(), old_layer)
+	Game.set_physics_mask(self, get_world_mask(), old_mask)
+
+func get_player_layer() -> int:
+	if ghost:
+		return Game.PHYSICS_LAYER.GHOST_PLAYER
+	return Game.PHYSICS_LAYER.PLAYER_BACKGROUND if background else Game.PHYSICS_LAYER.PLAYER
+
+func get_world_mask() -> int:
+	return Game.PHYSICS_LAYER.WORLD_BACKGROUND if background else Game.PHYSICS_LAYER.WORLD

@@ -304,15 +304,15 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scenes/ui/notifications/TextNotification.gd"
 }, {
-"base": "CollisionPolygon2D",
-"class": "TileMapCollisionPolygon2D",
-"language": "GDScript",
-"path": "res://src/scripts/nodes/TileMapCollisionPolygon2D.gd"
-}, {
 "base": "TileMap",
 "class": "TileMapCrumbleMarker",
 "language": "GDScript",
 "path": "res://src/scripts/nodes/TileMapCrumbleMarker.gd"
+}, {
+"base": "PolyCollisionShape2D",
+"class": "TileMapPolyCollisionShape2D",
+"language": "GDScript",
+"path": "res://addons/Godot-Utilities/Nodes/TileMapPolyCollisionShape2D.gd"
 }, {
 "base": "Control",
 "class": "Tracker",
@@ -409,8 +409,8 @@ _global_script_class_icons={
 "ShapePolygon2D": "",
 "Task": "",
 "TextNotification": "",
-"TileMapCollisionPolygon2D": "",
 "TileMapCrumbleMarker": "",
+"TileMapPolyCollisionShape2D": "",
 "Tracker": "",
 "TrackerAngle": "",
 "TrackerBar": "",
@@ -589,7 +589,13 @@ demo_load_file={
 2d_physics/layer_7="Ghost player"
 2d_physics/layer_8="Camera chunk"
 2d_physics/layer_9="Map chunk"
+2d_physics/layer_10="World (background)"
+2d_physics/layer_11="Player (background)"
 2d_physics/layer_20="World (fastfall bypass)"
+
+[node]
+
+name_num_separator=3
 
 [physics]
 

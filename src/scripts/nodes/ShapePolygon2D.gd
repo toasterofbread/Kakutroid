@@ -47,7 +47,7 @@ func __on_shape_changed():
 #### Helper functions ####
 
 static func circle( radius :float = 1.0, center :Vector2 = Vector2.ZERO ) -> PoolVector2Array:
-	var segments :int = int(4*floor(radius/32.0)+16) * 1
+	var segments :int = int(4*floor(radius/32.0)+16) * 2
 	var points = [];  points.resize(segments+1)
 	var segment_size = TAU / segments
 	for i in range(segments):

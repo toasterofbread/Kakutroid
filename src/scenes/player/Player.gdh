@@ -37,6 +37,7 @@ var running: bool = false setget set_running
 var fast_falling: bool = null setget set_fast_falling
 var physics_frame: int = 0
 var paused: bool = null
+export var background: bool = false setget set_background
 
 # - Data -
 var data: Dictionary = Utils.load_json("res://data/player/default.json").result
@@ -118,4 +119,6 @@ func set_current_shape(_value: int):
 func set_squeeze_amount_x(_value: float):
 	return
 func set_squeeze_amount_y(_value: float):
+	return
+func set_background(_value: bool):
 	return

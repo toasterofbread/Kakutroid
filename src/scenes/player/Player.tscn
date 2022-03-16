@@ -64,34 +64,34 @@ tracks/0/keys = {
 [sub_resource type="RectangleShape2D" id=4]
 extents = Vector2( 8, 8 )
 
-[sub_resource type="Gradient" id=5]
+[sub_resource type="Gradient" id=23]
 resource_local_to_scene = true
 colors = PoolColorArray( 1, 0.305882, 0.305882, 1, 0.996078, 0.435294, 1, 1 )
 
 [sub_resource type="GradientTexture" id=6]
 resource_local_to_scene = true
-gradient = SubResource( 5 )
+gradient = SubResource( 23 )
 width = 16
 
-[sub_resource type="Gradient" id=7]
+[sub_resource type="Gradient" id=24]
 resource_local_to_scene = true
 colors = PoolColorArray( 1, 0.305882, 0.305882, 1, 0.996078, 0.435294, 1, 1 )
 
 [sub_resource type="GradientTexture" id=8]
 resource_local_to_scene = true
-gradient = SubResource( 7 )
+gradient = SubResource( 24 )
 width = 16
 
 [sub_resource type="RectangleShape2D" id=9]
 extents = Vector2( 8, 8 )
 
-[sub_resource type="Gradient" id=10]
+[sub_resource type="Gradient" id=25]
 resource_local_to_scene = true
 colors = PoolColorArray( 1, 0.305882, 0.305882, 1, 0.996078, 0.435294, 1, 1 )
 
 [sub_resource type="GradientTexture" id=11]
 resource_local_to_scene = true
-gradient = SubResource( 10 )
+gradient = SubResource( 25 )
 width = 16
 
 [sub_resource type="CircleShape2D" id=12]
@@ -196,7 +196,6 @@ texture = SubResource( 6 )
 polygon = PoolVector2Array( 0, -8, 0, 8, 16, 8, 16, -8 )
 
 [node name="Triangle" type="CollisionPolygon2D" parent="Shapes"]
-visible = false
 self_modulate = Color( 1, 1, 1, 0 )
 position = Vector2( -24, 0 )
 polygon = PoolVector2Array( -8, 8, 0, -8, 8, 8 )
@@ -210,7 +209,6 @@ texture = SubResource( 8 )
 polygon = PoolVector2Array( 0, 0, 16, 8, 16, -8 )
 
 [node name="Circle" type="CollisionShape2D" parent="Shapes"]
-visible = false
 self_modulate = Color( 1, 1, 1, 0 )
 position = Vector2( -48, 0 )
 shape = SubResource( 9 )
@@ -222,7 +220,7 @@ rotation = 1.5708
 offset = Vector2( 8, 0 )
 antialiased = true
 texture = SubResource( 11 )
-polygon = PoolVector2Array( 8, 0, 7.39104, 3.06147, 5.65685, 5.65685, 3.06147, 7.39104, 4.89859e-16, 8, -3.06147, 7.39104, -5.65685, 5.65685, -7.39104, 3.06147, -8, 9.79717e-16, -7.39104, -3.06147, -5.65685, -5.65685, -3.06147, -7.39104, -1.46958e-15, -8, 3.06147, -7.39104, 5.65685, -5.65685, 7.39104, -3.06147, 8, 0 )
+polygon = PoolVector2Array( 8, 0, 7.84628, 1.56072, 7.39104, 3.06147, 6.65176, 4.44456, 5.65685, 5.65685, 4.44456, 6.65176, 3.06147, 7.39104, 1.56072, 7.84628, 4.89859e-16, 8, -1.56072, 7.84628, -3.06147, 7.39104, -4.44456, 6.65176, -5.65685, 5.65685, -6.65176, 4.44456, -7.39104, 3.06147, -7.84628, 1.56072, -8, 9.79717e-16, -7.84628, -1.56072, -7.39104, -3.06147, -6.65176, -4.44456, -5.65685, -5.65685, -4.44456, -6.65176, -3.06147, -7.39104, -1.56072, -7.84628, -1.46958e-15, -8, 1.56072, -7.84628, 3.06147, -7.39104, 4.44456, -6.65176, 5.65685, -5.65685, 6.65176, -4.44456, 7.39104, -3.06147, 7.84628, -1.56072, 8, 0 )
 script = ExtResource( 4 )
 shape = SubResource( 12 )
 

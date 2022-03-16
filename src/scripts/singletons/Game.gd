@@ -65,7 +65,15 @@ func load_room(id: String):
 		add_child(player)
 	
 	if current_room.player_path != null:
-		player.global_transform = current_room.get_node(current_room.player_path).global_transform
+		
+		var room_player: Player = current_room.get_node(current_room.player_path)
+		
+		# Apply room_player's export properties to the new player
+		for property in Utils.get_export_property_list(room_player):
+			player.set(property, room_player.get(property))
+		
+		player.global_transform = room_player.global_transform
+	
 	player.camera.current = true
 
 func room_exists(id: String):
@@ -156,7 +164,7 @@ func door_entered(origin_door: Door):
 
 func quit():
 	quitting = true
-	yield(Utils.call_signal_and_yield(self, "APPLICATION_QUIT"), "completed")
+	yield(Utils.emit_signal_and_yield(self, "APPLICATION_QUIT"), "completed")
 	
 #	if save_file.resource_path == "res://debug_save.tres":
 #		save_file.save()
@@ -272,8 +280,8 @@ enum PHYSICS_LAYER {
 	GHOST_PLAYER,
 	CAMERA_CHUNK,
 	MAP_CHUNK,
-	_10,
-	_11,
+	WORLD_BACKGROUND,
+	PLAYER_BACKGROUND,
 	_12,
 	_13,
 	_14,
