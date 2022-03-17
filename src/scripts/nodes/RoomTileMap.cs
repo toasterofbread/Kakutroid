@@ -35,6 +35,7 @@ public class RoomTileMap : TileMap
 	private TileMapData tilemap_data;
 	private float camera_max_distance;
 	private int skipped_frames = 0;
+	private Node2D camera;
 	
 	private List<int> available_pulse_tiles = new List<int>();
 	private List<RoomTileMapPulse>[] running_pulses = new List<RoomTileMapPulse>[MAX_PRIORITY + 1];
@@ -111,10 +112,14 @@ public class RoomTileMap : TileMap
 		SetCell(x, y, tile);
 	}
 	
-	public override void _Ready() {
+	public async override void _Ready() {
 		Game = GetNode("/root/Game");
 		if (Engine.EditorHint || Game.Get("current_room") == null)
 			return;
+		
+		Node2D player = Game.Get("player") as Node2D;
+		await ToSignal(player, "ready");
+		camera = player.Get("camera") as Node2D;
 		
 		ZIndex = 0;
 		ZAsRelative = false;
@@ -130,9 +135,6 @@ public class RoomTileMap : TileMap
 		}
 		
 		// Generate and cache camera_max_distance and tilemap_data
-//		Node player = Game.Get("player") as Node;
-//		Camera2D camera = player.Get("camera") as Camera2D;
-//		var distance = 
 		camera_max_distance = GetCameraMaxDistance() * 1.5F;
 		tilemap_data = new TileMapData(this);
 		
@@ -199,6 +201,7 @@ public class RoomTileMap : TileMap
 			return;
 		}
 		skipped_frames = 0;
+		Vector2 camera_position = camera.GlobalPosition;
 		
 		foreach (Vector2 cell in GetUsedCells()) {
 			int current_type = GetCellv(cell);
@@ -217,8 +220,13 @@ public class RoomTileMap : TileMap
 				if (priority == null)
 					continue;
 				foreach (RoomTileMapPulse pulse in priority) {
-					float distance = pulse.Origin.DistanceTo(cell_pos);
 					
+					float distance_to_camera = cell_pos.DistanceTo(camera_position);
+					if (distance_to_camera > camera_max_distance) {
+						continue;
+					}
+					
+					float distance = pulse.Origin.DistanceTo(cell_pos);
 					float max_distance = pulse.Infinite ? pulse.CurrentDistance : pulse.MaxDistance;
 					if (distance <= max_distance && Math.Abs(distance - pulse.CurrentDistance) <= pulse.Width) {
 						target_type = pulse.Tile;

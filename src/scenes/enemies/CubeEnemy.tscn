@@ -4,7 +4,26 @@
 [ext_resource path="res://src/scenes/enemies/CubeEnemy.gd" type="Script" id=2]
 [ext_resource path="res://addons/godot_sfxr/SfxrStreamPlayer.gd" type="Script" id=3]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 8, 8 )
+
+[sub_resource type="Animation" id=2]
+length = 0.2
+step = 0.01
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 0.776471, 0.309804, 0.309804, 1 ), Color( 1, 1, 1, 1 ) ]
+}
+
+[sub_resource type="Shader" id=3]
 code = "shader_type canvas_item;
 render_mode unshaded;
 
@@ -28,37 +47,18 @@ void fragment() {
 //	COLOR.a = texture(TEXTURE, UV).a;
 }"
 
-[sub_resource type="Gradient" id=2]
+[sub_resource type="Gradient" id=4]
 offsets = PoolRealArray( 0.292453, 1 )
 colors = PoolColorArray( 1, 0.435294, 0.435294, 1, 1, 0, 0, 1 )
 
-[sub_resource type="GradientTexture" id=3]
-gradient = SubResource( 2 )
+[sub_resource type="GradientTexture" id=5]
+gradient = SubResource( 4 )
 width = 16
 
-[sub_resource type="ShaderMaterial" id=4]
-shader = SubResource( 1 )
+[sub_resource type="ShaderMaterial" id=6]
+shader = SubResource( 3 )
 shader_param/mix_amount = 0.82
-shader_param/gradient = SubResource( 3 )
-
-[sub_resource type="RectangleShape2D" id=5]
-extents = Vector2( 8, 8 )
-
-[sub_resource type="Animation" id=6]
-length = 0.2
-step = 0.01
-tracks/0/type = "value"
-tracks/0/path = NodePath("Sprite:modulate")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 0.1, 0.2 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 0,
-"values": [ Color( 1, 1, 1, 1 ), Color( 0.776471, 0.309804, 0.309804, 1 ), Color( 1, 1, 1, 1 ) ]
-}
+shader_param/gradient = SubResource( 5 )
 
 [sub_resource type="Gradient" id=7]
 offsets = PoolRealArray( 0, 0.482759, 1 )
@@ -75,19 +75,14 @@ collision_layer = 8
 collision_mask = 524289
 script = ExtResource( 2 )
 
-[node name="Sprite" type="Sprite" parent="."]
-material = SubResource( 4 )
-texture = ExtResource( 1 )
-centered = false
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 visible = false
 position = Vector2( 8, 8 )
-shape = SubResource( 5 )
+shape = SubResource( 1 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 playback_speed = 3.0
-anims/damage = SubResource( 6 )
+anims/damage = SubResource( 2 )
 
 [node name="RayCastContainer" type="Node2D" parent="."]
 position = Vector2( 8, 0 )
@@ -106,7 +101,7 @@ cast_to = Vector2( 0, 1 )
 collision_mask = 524289
 
 [node name="CPUParticles2D" type="CPUParticles2D" parent="."]
-material = SubResource( 4 )
+material = SubResource( 6 )
 position = Vector2( 8, 8 )
 scale = Vector2( 0.25, 0.25 )
 emitting = false
@@ -129,7 +124,7 @@ collision_mask = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DamageArea"]
 visible = false
 position = Vector2( 8, 8 )
-shape = SubResource( 5 )
+shape = SubResource( 1 )
 
 [node name="HurtSound" type="AudioStreamPlayer" parent="."]
 stream = SubResource( 8 )
@@ -188,5 +183,10 @@ low_pass_filter/cutoff_sweep = 0.0
 low_pass_filter/resonance = 0.0
 high_pass_filter/cutoff_frequency = 0.0
 high_pass_filter/cutoff_sweep = 0.0
+
+[node name="Sprite" type="Sprite" parent="."]
+material = SubResource( 6 )
+texture = ExtResource( 1 )
+centered = false
 
 [connection signal="body_entered" from="DamageArea" to="." method="_on_DamageArea_body_entered"]

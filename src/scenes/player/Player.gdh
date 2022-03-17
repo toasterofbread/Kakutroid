@@ -1,4 +1,4 @@
-extends KinematicBody2DWithArea2D
+extends KinematicBody2D
 class_name Player
 
 # - Signals -
@@ -7,7 +7,15 @@ signal DATA_CHANGED() # TODO
 
 # - Enums -
 enum STATE { NONE, NEUTRAL, WALK, RUN, JUMP, SLIDE }
-enum UPGRADE { WALLJUMP }
+enum UPGRADE { WALLJUMP, MORPH_CUBE, MORPH_TRIANGLE, MORPH_CIRCLE }
+enum AREA { MAIN }
+
+# - Constants -
+const SHAPE_UPGRADES: Dictionary = {
+	Enums.SHAPE.CUBE: UPGRADE.MORPH_CUBE,
+	Enums.SHAPE.TRIANGLE: UPGRADE.MORPH_TRIANGLE,
+	Enums.SHAPE.CIRCLE: UPGRADE.MORPH_CIRCLE,
+}
 
 # - Export vars -
 export var debug_mode: bool = false
@@ -27,6 +35,8 @@ onready var landing_particles: CPUParticles2D = $LandingParticles
 onready var intangibility_timer: Timer = $IntangibilityTimer
 onready var wind_sprite: AnimatedSprite = $WindSprite
 onready var camera: ControlledCamera2D = $Camera
+onready var area_main: ExPhysicsBodyArea2D = $MainArea
+onready var edge_collisionshapes: Node = $Edges
 
 # - Variables -
 var states: Dictionary = {}
@@ -52,7 +62,7 @@ onready var shape_data: Dictionary = {
 	Enums.SHAPE.CIRCLE: {"node": $Shapes/Circle},
 }
 var current_shape: int = null setget set_current_shape
-var current_shape_node: Node2D = null
+var current_shape_node: CollisionShape2D = null
 
 # - Scenes -
 const projectile_scene: PackedScene = preload("res://src/scenes/player/Projectile.tscn")
@@ -102,6 +112,10 @@ func camerachunk_entered(_chunk: Node):
 	pass
 func camerachunk_exited(_chunk: Node):
 	pass
+func get_player_layer() -> int:
+	return null
+func get_world_mask() -> int:
+	return null
 
 # - Setter declarations -
 func set_health(_value: float):

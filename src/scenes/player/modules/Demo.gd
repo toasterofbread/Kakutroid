@@ -90,6 +90,7 @@ func set_recording(value: bool):
 		demo_data = InputDemo.new()
 		demo_data.ignored_actions = DEMO_IGNORED_ACTIONS
 		demo_data.metadata["player_data"] = player.save_data
+		demo_data.metadata["player_background"] = player.background
 	
 	if not recording and demo_data.get_frame_count() != 0:
 		

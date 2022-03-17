@@ -4,9 +4,14 @@ onready var DMG: Damageable = Damageable.new(self)
 
 const DEBUG_SAVE_DATA: Dictionary = {
 	"upgrades": {
-		UPGRADE.WALLJUMP: {"acquired": 1, "enabled": true}
+		UPGRADE.WALLJUMP: {"acquired": 1, "enabled": true},
+		UPGRADE.MORPH_CUBE: {"acquired": 1, "enabled": true},
+		UPGRADE.MORPH_TRIANGLE: {"acquired": 1, "enabled": true},
+		UPGRADE.MORPH_CIRCLE: {"acquired": 1, "enabled": true},
 	}
 }
+
+export var _a: int = 0
 
 func _ready():
 	
@@ -20,7 +25,7 @@ func _ready():
 	
 	camera.current = !ghost
 	camera.pause_mode = Node.PAUSE_MODE_PROCESS
-	area_disabled = ghost
+	area_main.set_disabled(ghost)
 	
 	add_child(module_demo)
 	add_child(module_input)
@@ -49,9 +54,9 @@ func _ready():
 			save_data["upgrades"][upgrade] = {"acquired": 0, "enabled": true}
 	
 	if not ghost:
-		area.connect("body_entered", self, "_on_area_body_entered")
-		area.set_collision_mask_bit(19, true)
-		area.set_collision_mask_bit(3, true)
+		area_main.connect("body_entered", self, "_on_area_main_body_entered")
+		area_main.set_collision_mask_bit(19, true)
+		area_main.set_collision_mask_bit(3, true)
 		
 		# TODO | Player spawning system
 		if Game.player == null:
@@ -60,18 +65,20 @@ func _ready():
 		# DEBUG
 		save_data = DEBUG_SAVE_DATA
 #		Game.save_file.set_dict("player", save_data)
-	
-	Game.set_node_layer(self, Game.LAYER.PLAYER)
-	Game.set_node_layer(landing_particles, Game.LAYER.PLAYER, 1)
-	Game.set_node_layer(trail_emitter, Game.LAYER.PLAYER, -1)
-	
-	if ghost:
+	else:
 		background = true
+	
+	Game.set_node_layer(self, get_z_layer())
+	Game.set_node_layer(landing_particles, get_z_layer(), 1)
+	Game.set_node_layer(trail_emitter, get_z_layer(), -1)
+	
 	Game.set_all_physics_layers(self, false)
 	Game.set_all_physics_masks(self, false)
 	Game.set_physics_layer(self, get_player_layer(), true)
 	Game.set_physics_mask(self, Game.PHYSICS_LAYER.CAMERA_CHUNK, !ghost)
 	Game.set_physics_mask(self, get_world_mask(), true)
+	
+	set_background(true)
 	
 	passive_heal_cap = player_data["MAX_HEALTH"]
 	Damageable.set_health(self, player_data["MAX_HEALTH"])
@@ -79,6 +86,7 @@ func _ready():
 	change_state(Player.STATE.NEUTRAL)
 	set_current_shape(Enums.SHAPE.CUBE, true)
 	wind_sprite.visible = false
+	
 
 func _process(delta: float):
 	
@@ -137,6 +145,8 @@ func _process(delta: float):
 	
 	if module_input.is_action_just_pressed("cycle_shape"):
 		set_current_shape(Enums.SHAPE.CIRCLE)
+	elif module_input.is_action_just_pressed("switch_world_layer"):
+		attempt_background_transition()
 
 func _physics_process(delta: float):
 	
@@ -169,8 +179,8 @@ func set_current_shape(value: int, instant: bool = false):
 	current_shape = value
 	shape_transition_tween.stop_all()
 	
-	if trail_emitter.has_trail_node(current_shape_node):
-		trail_emitter.remove_trail_node(current_shape_node)
+	if current_shape_node != null and trail_emitter.has_trail_node(current_shape_node.get_child(0)):
+		trail_emitter.remove_trail_node(current_shape_node.get_child(0))
 	
 	if instant:
 		var position: Vector2
@@ -184,8 +194,9 @@ func set_current_shape(value: int, instant: bool = false):
 		current_shape_node.visible = true
 		Utils.reparent_node(current_shape_node, self)
 		current_shape_node.global_position = position
+		on_current_shape_changed()
 		
-		trail_emitter.add_trail_node(current_shape_node)
+		trail_emitter.add_trail_node(current_shape_node.get_child(0))
 	else:
 		shape_transition_tween.interpolate_property(current_shape_node, "modulate:a", current_shape_node.modulate.a, 0.0, SHAPE_TRANSITION_DURATION / 2.0, Tween.TRANS_EXPO)
 		shape_transition_tween.start()
@@ -197,12 +208,16 @@ func set_current_shape(value: int, instant: bool = false):
 		current_shape_node.visible = true
 		Utils.reparent_node(current_shape_node, self)
 		current_shape_node.global_position = position
+		on_current_shape_changed()
 		
-		trail_emitter.add_trail_node(current_shape_node)
+		trail_emitter.add_trail_node(current_shape_node.get_child(0))
 		
 		shape_transition_tween.interpolate_property(current_shape_node, "modulate:a", current_shape_node.modulate.a, 1.0, SHAPE_TRANSITION_DURATION / 2.0, Tween.TRANS_EXPO)
 		shape_transition_tween.start()
 		yield(shape_transition_tween, "tween_all_completed")
+
+func on_current_shape_changed():
+	pass
 
 func set_crouching(value: bool):
 	if value == crouching:
@@ -312,7 +327,7 @@ func set_intangible(value: bool, no_timer: bool = false):
 		intangibility_timer.start(player_data["HIT_INTANGIBILITY_DURATION"])
 	
 	if !ghost:
-		Game.set_physics_layer(self, Game.PHYSICS_LAYER.PLAYER, !DMG.intangible)
+		Game.set_physics_layer(self, get_player_layer(), !DMG.intangible)
 
 func _on_IntangibilityTimer_timeout():
 	set_intangible(false)
@@ -342,10 +357,10 @@ func set_fast_falling(value: bool):
 		return
 	fast_falling = value
 	
-	set_collision_mask_bit(19, !fast_falling and !ghost)
-	area.disabled = not fast_falling and not wind_sprite.visible
+	set_collision_mask_bit(19, !fast_falling and !ghost and !background)
+	area_main.disabled = not fast_falling and not wind_sprite.visible
 
-func _on_area_body_entered(body: Node):
+func _on_area_main_body_entered(body: Node):
 	if not ghost and (fast_falling or wind_sprite.visible) and Damageable.is_node_damageable(body):
 		Damageable.damage(body, Enums.DAMAGE_TYPE.FASTFALL, player_data["HIGHSPEED_COLLISION_DAMAGE"], global_position)
 
@@ -363,9 +378,9 @@ func play_wind_animation(falling_only: bool = false):
 	wind_sprite.play()
 	
 	set_intangible(true, true)
-	area.enable()
+	area_main.enable()
 	yield(wind_sprite, "animation_finished")
-	area.disabled = not fast_falling
+	area_main.disabled = not fast_falling
 	set_intangible(false, true)
 	
 	wind_sprite.visible = false
@@ -380,9 +395,6 @@ func get_upgrade_amount(upgrade: int) -> int:
 	return save_data["upgrades"][upgrade]["acquired"]
 
 func set_background(value: bool):
-	if background == value:
-		return
-	
 	var old_layer: bool = get_collision_layer_bit(get_player_layer())
 	var old_mask: bool = get_collision_mask_bit(get_world_mask())
 	Game.set_physics_layer(self, get_player_layer(), false)
@@ -392,6 +404,13 @@ func set_background(value: bool):
 	
 	Game.set_physics_layer(self, get_player_layer(), old_layer)
 	Game.set_physics_mask(self, get_world_mask(), old_mask)
+	
+	Game.set_node_layer(self, get_z_layer())
+	
+	if landing_particles:
+		Game.set_node_layer(landing_particles, get_z_layer(), 1)
+	if trail_emitter:
+		Game.set_node_layer(trail_emitter, get_z_layer(), -1)
 
 func get_player_layer() -> int:
 	if ghost:
@@ -400,3 +419,73 @@ func get_player_layer() -> int:
 
 func get_world_mask() -> int:
 	return Game.PHYSICS_LAYER.WORLD_BACKGROUND if background else Game.PHYSICS_LAYER.WORLD
+
+func get_z_layer() -> int:
+	return Game.LAYER.PLAYER_BACKGROUND if background else Game.LAYER.PLAYER
+
+func background_transition_blocked():
+	play_sound("bump_wall")
+	current_shape_node.modulate.a = 0.5
+	trail_emitter.modulate.a = 0.5
+	squeeze_amount_y = 0.1
+	yield(get_tree().create_timer(0.1), "timeout")
+	squeeze_amount_y = 0.0
+	current_shape_node.modulate.a = 1.0
+	trail_emitter.modulate.a = 1.0
+
+func attempt_background_transition():
+	
+#	if not background:
+#		shapecast.set_collision_mask_bit(Game.PHYSICS_LAYER.WORLD_BACKGROUND, true)
+#		shapecast.set_collision_mask_bit(Game.PHYSICS_LAYER.BACKGROUND_ENTRY_AREA_POINT, false)
+#		shapecast.force_shapecast_update()
+#
+#		if shapecast.is_colliding():
+#			background_transition_blocked()
+#			return
+	
+	var shapecast: ShapeCast2D = Utils.get_physicsbody2d_shapecast(self, [Game.PHYSICS_LAYER.BACKGROUND_ENTRY_AREA_POINT])
+	
+	if not shapecast.is_colliding():
+		background_transition_blocked()
+		shapecast.queue_free()
+		return
+	
+	var cell_pos: Vector2 = shapecast.collision_result[0]["metadata"]
+	var tilemap: BackgroundTileMap = shapecast.get_collider(0)
+	
+	var use_shape: int = null
+	
+	for shape in tilemap.get_cell_compatible_shapes(cell_pos):
+		if using_upgrade(SHAPE_UPGRADES[shape]):
+			if shape == current_shape:
+				use_shape = shape
+				break
+			elif use_shape == null:
+				use_shape = shape
+	
+	# No useable shape is compatible with cell
+	if use_shape == null:
+		print(2)
+		background_transition_blocked()
+		return
+	elif use_shape != current_shape:
+		set_current_shape(use_shape)
+	
+	if not tilemap.is_cell_point(cell_pos):
+		
+		for edge in edge_collisionshapes.get_child_count():
+			
+			if (edge == 1 or edge == 3) and is_on_floor():
+				continue
+			
+			shapecast.shape = edge_collisionshapes.get_child(edge).shape
+			shapecast.force_shapecast_update()
+			
+			if not shapecast.is_colliding():
+				background_transition_blocked()
+				shapecast.queue_free()
+				return
+	
+	shapecast.queue_free()
+	tilemap.handle_player_transition(self, cell_pos)

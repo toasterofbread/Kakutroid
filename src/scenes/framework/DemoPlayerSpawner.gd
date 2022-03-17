@@ -54,6 +54,8 @@ func _run():
 		player.module_demo.demo_data = demo
 		if "player_data" in demo.metadata:
 			player.save_data = demo.metadata["player_data"].duplicate(true)
+		if "player_background" in demo.metadata:
+			player.background = demo.metadata["player_background"]
 		
 		var tween: Tween = tweens[players.size()]
 		players[player] = true
@@ -65,7 +67,10 @@ func _run():
 		yield(get_tree().create_timer(rng.randf_range(min_wait_time, max_wait_time)), "timeout")
 
 func _physics_process(_delta: float):
+	
+	var i: int = -1
 	for player in players:
+		i += 1
 		
 		if not players[player]:
 			continue
@@ -73,16 +78,20 @@ func _physics_process(_delta: float):
 		var demo: PlayerModuleDemo = player.module_demo
 		if demo.playback_frame >= demo.demo_data.get_frame_count() - (0.5*Engine.iterations_per_second):
 			
-			var tween: Tween = tweens[players.keys().find(player)]
+			var tween: Tween = tweens[i]
 			tween.stop_all()
 			tween.interpolate_property(player, "modulate:a", player.modulate.a, 0.0, 0.5, Tween.TRANS_SINE)
 			
-			Utils.Callback.new(funcref(player, "queue_free")).attach_to_node(player).connect_signal(tween, "tween_completed")
+			tween.connect("tween_completed", self, "on_tween_completed")
+#			Utils.Callback.new(funcref(player, "queue_free")).attach_to_node(player).connect_signal(tween, "tween_completed")
 			tween.start()
 			
 			players[player] = false
 			yield(player, "tree_exited")
 			players.erase(player)
+
+func on_tween_completed(object: Node, _key: NodePath):
+	object.queue_free()
 
 func get_next_demo() -> InputDemo:
 	if alternate:

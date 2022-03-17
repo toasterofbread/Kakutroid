@@ -37,6 +37,10 @@ func has_door(door_name: String) -> bool:
 func get_door(door_name: String) -> Door:
 	return doors[door_name]
 
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("DEBUG_TRIGGER"):
+		pulse_bg(Game.player.global_position, Color.violet, true)
+
 func pulse_bg(origin: Vector2, colour: Color, force: bool = false, priority: int = 0) -> Reference:
 	# Settable properties on return object:
 	# Vector2 Origin;

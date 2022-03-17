@@ -4,10 +4,11 @@
 
 [resource]
 script = ExtResource( 1 )
-input_data = [ [  ], 2, [ "pad_right" ], 137, [ "pad_right", "jump" ], 32, [ "pad_right" ], 1, [  ], 29, [ "pad_right" ], [ "pad_right", "jump" ], 25, [ "pad_right" ], 11, [ "pad_right", "jump" ], 28, [ "pad_right" ], 11, [ "pad_right", "jump" ], 26, [ "pad_right" ], 14, [ "pad_right", "jump" ], 28, [ "pad_right" ], 15, [ "pad_right", "jump" ], 27, [ "pad_right" ], 14, [ "pad_right", "jump" ], 25, [ "pad_right" ], 16, [ "pad_right", "jump" ], 27, [ "pad_right" ], 10, [ "pad_right", "pad_down" ], 5, [ "pad_right", "jump" ], 1, [ "pad_left", "pad_right", "jump" ], [ "pad_left", "jump" ], 20, [ "pad_left" ], 76, [ "pad_left", "jump" ], 29, [ "pad_left" ], 10, [ "pad_left", "jump" ], 27, [ "pad_left" ], 9, [ "pad_left", "jump" ], 27, [ "pad_left" ], 10, [ "pad_left", "jump" ], 28, [ "pad_left" ], 10, [ "pad_left", "jump" ], 27, [ "pad_left" ], 11, [ "pad_left", "jump" ], 28, [ "pad_left" ], 8, [ "pad_left", "jump" ], 28, [ "pad_left" ], 9, [ "pad_left", "jump" ], 30, [ "pad_left" ], 11, [ "pad_left", "jump" ], 26, [ "pad_left" ], 11, [ "pad_left", "jump" ], 29, [ "pad_left" ], 8, [ "pad_left", "jump" ], 24, [ "pad_left" ], 9, [ "pad_left", "jump" ], 36, [ "pad_left" ], 1, [ "pad_left", "pad_down" ], 12, [ "pad_left" ], 162 ]
-ignored_actions = PoolStringArray( "DEBUG_quit", "demo_toggle_recording", "demo_play_file", "demo_load_file" )
+input_data = [ [  ], 20, [ "pad_right" ], 73, [ "pad_right", "jump" ], 30, [ "pad_right" ], 12, [ "pad_right", "jump" ], 24, [ "pad_right" ], 10, [ "pad_right", "jump" ], 23, [ "pad_right" ], 11, [ "pad_right", "jump" ], 24, [ "pad_right" ], 9, [ "pad_right", "jump" ], 25, [ "pad_right" ], 9, [ "pad_right", "jump" ], 25, [ "pad_right" ], 9, [ "pad_right", "jump" ], 24, [ "pad_right" ], 10, [ "pad_right", "jump" ], 23, [ "pad_right" ], 10, [ "pad_right", "jump" ], 12, [ "pad_left", "pad_right", "jump" ], 1, [ "pad_left", "jump" ], 36, [ "pad_left" ], 7, [ "pad_left", "jump" ], 24, [ "pad_left" ], 7, [ "pad_left", "jump" ], 23, [ "pad_left" ], 9, [ "pad_left", "jump" ], 28, [ "pad_left" ], 3, [ "pad_left", "jump" ], 23, [ "pad_left" ], 9, [ "pad_left", "jump" ], 58, [ "pad_left" ], 7, [ "pad_left", "jump" ], 23, [ "pad_left" ], 9, [ "pad_left", "jump" ], 24, [ "pad_left" ], 8, [ "pad_left", "jump" ], 25, [ "pad_left" ], 10, [ "pad_left", "jump" ], 21, [ "pad_left" ], 12, [ "pad_left", "jump" ], 34, [ "pad_left" ], 245 ]
+ignored_actions = PoolStringArray( "DEBUG_quit", "demo_toggle_recording", "demo_play_file", "demo_load_file", "ui_accept", "ui_home", "ui_select" )
 recording_framerate = 75
 metadata = {
+"player_background": true,
 "player_data": {
 "upgrades": {
 0: {

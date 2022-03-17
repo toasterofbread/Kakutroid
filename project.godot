@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "TileMap",
+"class": "BackgroundTileMap",
+"language": "GDScript",
+"path": "res://src/scripts/nodes/BackgroundTileMap.gd"
+}, {
 "base": "Reference",
 "class": "BrushPrefabs",
 "language": "GDScript",
@@ -189,11 +194,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/Godot-Utilities/Resources/InputDemo.gd"
 }, {
-"base": "KinematicBody2D",
-"class": "KinematicBody2DWithArea2D",
-"language": "GDScript",
-"path": "res://addons/Godot-Utilities/Nodes/KinematicBody2DWithArea2D.gd"
-}, {
 "base": "TextNotification",
 "class": "LargeTextNotification",
 "language": "GDScript",
@@ -234,7 +234,12 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scripts/singletons/notification/Notification.gd"
 }, {
-"base": "KinematicBody2DWithArea2D",
+"base": "GridContainer",
+"class": "PhysicsLayerOverlay",
+"language": "GDScript",
+"path": "res://addons/Godot-Utilities/Nodes/PhysicsLayerOverlay.gd"
+}, {
+"base": "KinematicBody2D",
 "class": "Player",
 "language": "GDScript",
 "path": "res://src/scenes/player/Player.gdh"
@@ -350,6 +355,7 @@ _global_script_classes=[ {
 "path": "res://addons/hyperlog/value_tracker.gd"
 } ]
 _global_script_class_icons={
+"BackgroundTileMap": "",
 "BrushPrefabs": "",
 "ButtonIcon": "",
 "ButtonPromptNotification": "",
@@ -386,7 +392,6 @@ _global_script_class_icons={
 "GEUtils": "",
 "GameRoom": "",
 "InputDemo": "",
-"KinematicBody2DWithArea2D": "",
 "LargeTextNotification": "",
 "LayerSetter": "",
 "List": "",
@@ -395,6 +400,7 @@ _global_script_class_icons={
 "NinePatchRectTextureButton": "",
 "NodeTrailEmitter": "",
 "Notification": "",
+"PhysicsLayerOverlay": "",
 "Player": "",
 "PlayerModule": "",
 "PlayerModuleDemo": "",
@@ -488,6 +494,13 @@ texture={
 
 [input]
 
+ui_accept={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777222,"unicode":0,"echo":false,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":32,"unicode":0,"echo":false,"script":null)
+, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":0,"pressure":0.0,"pressed":false,"script":null)
+ ]
+}
 pad_left={
 "deadzone": 0.5,
 "events": [ Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":14,"pressure":0.0,"pressed":false,"script":null)
@@ -577,6 +590,12 @@ demo_load_file={
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777236,"unicode":0,"echo":false,"script":null)
  ]
 }
+switch_world_layer={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":87,"unicode":0,"echo":false,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":69,"unicode":0,"echo":false,"script":null)
+ ]
+}
 
 [layer_names]
 
@@ -591,6 +610,8 @@ demo_load_file={
 2d_physics/layer_9="Map chunk"
 2d_physics/layer_10="World (background)"
 2d_physics/layer_11="Player (background)"
+2d_physics/layer_12="Player weapon (background)"
+2d_physics/layer_13="Background entry area / point"
 2d_physics/layer_20="World (fastfall bypass)"
 
 [node]

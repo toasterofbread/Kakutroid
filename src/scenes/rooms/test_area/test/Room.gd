@@ -10,9 +10,6 @@ func ready() -> void:
 	if "fire_tutorial_completed" in room_data and room_data["fire_tutorial_completed"]:
 		$TutorialPanelFire.queue_free()
 		tutorial_panel_fire = null
-	
-#	yield(tilemap,"ready")
-	_on_CRUMBLE_DESTROYED(Enums.DAMAGE_TYPE.CRUMBLE)
 
 func _on_CRUMBLE_DESTROYED(type: int) -> void:
 	for block in crumble_blocks:

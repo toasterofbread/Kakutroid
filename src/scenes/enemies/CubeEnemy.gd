@@ -1,11 +1,14 @@
-extends KinematicBody2DWithArea2D
+extends KinematicBody2D
+
+export var background: bool = false
 
 onready var DMG: Damageable = Damageable.new(self, true)
 
 var velocity: Vector2 = Vector2.ZERO
 onready var data: Dictionary = Game.other_data["enemy_cube"]
-onready var raycast_side = $RayCastContainer/Side
-onready var raycast_bottom = $RayCastContainer/Bottom
+onready var raycast_side: RayCast2D = $RayCastContainer/Side
+onready var raycast_bottom: RayCast2D = $RayCastContainer/Bottom
+onready var raycast_container: Node2D = $RayCastContainer
 var raycast_bottom_float_frames: int = 0
 
 var facing: int = 1
@@ -14,7 +17,14 @@ var facing: int = 1
 func _ready():
 	DMG.health = data["HEALTH"]
 	Game.set_node_layer(self, Game.LAYER.ENEMY)
-#	Game.set_node_damageable(self)
+	
+	Game.set_all_physics_layers(self, false)
+	Game.set_all_physics_masks(self, false)
+	
+	Game.set_physics_layer(self, Game.PHYSICS_LAYER.ENEMY, true)
+	Game.set_physics_mask(self, Game.PHYSICS_LAYER.WORLD_BACKGROUND if background else Game.PHYSICS_LAYER.WORLD, true)
+	Game.set_physics_mask(self, Game.PHYSICS_LAYER.PLAYER_WEAPON_BACKGROUND if background else Game.PHYSICS_LAYER.PLAYER_WEAPON, true)
+	Game.set_physics_mask(self, Game.PHYSICS_LAYER.PLAYER if background else Game.PHYSICS_LAYER.PLAYER_BACKGROUND, true)
 
 func on_damage(type: int, amount: float, _position: Vector2 = null) -> bool:
 	DMG.health -= amount
@@ -35,12 +45,12 @@ func on_death(_type: int):
 	
 	$CollisionShape2D.queue_free()
 	$RayCastContainer.queue_free()
-	$Tween.interpolate_property($Sprite, "modulate:a", $Sprite.modulate.a, 0.0, 0.15, Tween.TRANS_SINE)
-	$Tween.start()
+	$Sprite.queue_free()
 	$DeathSound.play()
-	$CPUParticles2D.emitting = true
 	
+	$CPUParticles2D.emitting = true
 	yield(Utils.yield_particle_completion($CPUParticles2D), "completed")
+	
 	queue_free()
 
 func _process(delta: float):
@@ -53,7 +63,7 @@ func _physics_process(_delta: float):
 		raycast_bottom_float_frames = 0
 		velocity.x *= -1
 		facing *= -1
-		$RayCastContainer.scale.x = facing
+		raycast_container.scale.x = facing
 	
 	if not raycast_bottom.is_colliding():
 		raycast_bottom_float_frames += 1

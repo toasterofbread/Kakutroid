@@ -38,9 +38,9 @@ func _init(_host: Node = null, enable_hyperlog: bool = false) -> void:
 	
 	host.add_to_group(DAMAGEABLE_GROUP)
 	
-	if enable_hyperlog:
-		HyperLog.log(host).text("health")
-		Utils.Callback.new(funcref(HyperLog, "remove_log"), [host]).connect_signal(self, "DEATH").attach_to_node(host)
+#	if enable_hyperlog:
+#		HyperLog.log(host).text("health")
+#		Utils.Callback.new(funcref(HyperLog, "remove_log"), [host]).connect_signal(self, "DEATH").attach_to_node(host)
 
 func on_damage(_type: int, amount: float, _position: Vector2) -> bool:
 	health = max(0.0, health - amount)

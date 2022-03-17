@@ -1,3 +1,4 @@
+tool
 extends Node
 
 signal SETTINGS_CHANGED(path, value)
@@ -36,6 +37,10 @@ func _init():
 	load_savefile("res://debug_save.tres") # DEBUG
 
 func _ready():
+	
+	if Engine.editor_hint:
+		return
+	
 	load_settings()
 	add_child(room_container)
 	
@@ -44,10 +49,20 @@ func _ready():
 #	for room_id in rooms:
 #		rooms[room_id] = load(rooms[room_id])
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	if Engine.editor_hint:
+		return
 	Overlay.SET("FPS", Engine.get_frames_per_second())
 
+func _process(delta: float) -> void:
+	if Engine.editor_hint:
+		return
+	Overlay.SET("Idle frame time", delta)
+
 func _enter_tree():
+	if Engine.editor_hint:
+		return
+	
 	get_tree().connect("node_added", self, "_on_tree_node_added")
 
 func _exit_tree():
@@ -190,7 +205,7 @@ func get_layer_by_name(layer_name: String) -> int:
 #	return node.is_in_group(DAMAGEABLE_GROUP_NAME)
 
 # Z Layer system
-enum LAYER {BACKGROUND, UPGRADE_PICKUP, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER, DOOR, WORLD, BLOCK, MENU}
+enum LAYER {BACKGROUND, UPGRADE_PICKUP, ENEMY, ENEMY_WEAPON, PLAYER_WEAPON, PLAYER_BACKGROUND, BACKGROUND_OVERLAY, PLAYER, DOOR, WORLD, BLOCK, MENU}
 var layer_z_indices: Dictionary = null
 var max_layer_offset: int
 
@@ -282,8 +297,8 @@ enum PHYSICS_LAYER {
 	MAP_CHUNK,
 	WORLD_BACKGROUND,
 	PLAYER_BACKGROUND,
-	_12,
-	_13,
+	PLAYER_WEAPON_BACKGROUND,
+	BACKGROUND_ENTRY_AREA_POINT,
 	_14,
 	_15,
 	_16,

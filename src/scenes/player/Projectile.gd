@@ -5,12 +5,13 @@ onready var sprite: Sprite = $Sprite
 
 var direction: int = 1
 var shape: int
-var player: KinematicBody2DWithArea2D
+var player: Node
 
-func init(_direction: int, _shape: int, _colour: Color, _player: KinematicBody2DWithArea2D):
+func init(_direction: int, _shape: int, _colour: Color, _player: Node):
 	direction = _direction
 	shape = _shape
 	player = _player
+	scale *= player.scale
 
 func _ready():
 	match shape:
@@ -23,6 +24,12 @@ func _ready():
 	
 	Game.set_node_layer(self, Game.LAYER.PLAYER_WEAPON)
 	Game.set_node_layer(particles, Game.LAYER.PLAYER, 1)
+	
+	Game.set_all_physics_layers(self, false)
+	Game.set_all_physics_masks(self, false)
+	Game.set_physics_layer(self, Game.PHYSICS_LAYER.PLAYER_WEAPON_BACKGROUND if player.background else Game.PHYSICS_LAYER.PLAYER_WEAPON, true)
+	Game.set_physics_mask(self, player.get_world_mask(), true)
+	
 	$FireSound.play()
 	$CPUParticles2D.texture = sprite.texture
 
