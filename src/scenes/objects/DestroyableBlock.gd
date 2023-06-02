@@ -10,7 +10,7 @@ enum RESPAWN_TIME {
 	LONG,
 	NO_RESPAWN
 }
-export(Array, Enums.DAMAGE_TYPE) var damage_types: Array = [Enums.DAMAGE_TYPE.FASTFALL]
+export(Array(Enums.DAMAGE_TYPE)) var damage_types: Array = [Enums.DAMAGE_TYPE.FASTFALL]
 export(RESPAWN_TIME) var respawn_time: int = RESPAWN_TIME.NORMAL
 
 enum STATE {NORMAL, DESTROYED, RESPAWNING}

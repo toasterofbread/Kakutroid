@@ -5,7 +5,7 @@ const PLAYER_SCENE: PackedScene = preload("res://src/scenes/player/Player.tscn")
 export(int, 0, 100) var player_amount: int = 1
 export(float, 0, 60) var min_wait_time: float = 3.0
 export(float, 0, 60) var max_wait_time: float = 3.0
-export(Array, Resource) var demo_resources: Array
+export(Array(Resource)) var demo_resources: Array
 export(Array, float) var demo_weights: PoolRealArray
 export var active: bool = true setget set_active
 export var alternate: bool = false

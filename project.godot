@@ -64,11 +64,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/scenes/framework/camera_chunk/DiscreteCameraChunk.gd"
 }, {
-"base": "ExPhysicsBodyArea2D",
-"class": "Door",
-"language": "GDScript",
-"path": "res://src/scenes/framework/Door.gdh"
-}, {
 "base": "Area2D",
 "class": "ExArea2D",
 "language": "GDScript",
@@ -239,11 +234,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/Godot-Utilities/Nodes/PhysicsLayerOverlay.gd"
 }, {
-"base": "KinematicBody2D",
-"class": "Player",
-"language": "GDScript",
-"path": "res://src/scenes/player/Player.gdh"
-}, {
 "base": "Node",
 "class": "PlayerModule",
 "language": "GDScript",
@@ -366,7 +356,6 @@ _global_script_class_icons={
 "Damageable": "",
 "DestroyableBlock": "",
 "DiscreteCameraChunk": "",
-"Door": "",
 "ExArea2D": "",
 "ExArray": "",
 "ExPhysicsBodyArea2D": "",
@@ -401,7 +390,6 @@ _global_script_class_icons={
 "NodeTrailEmitter": "",
 "Notification": "",
 "PhysicsLayerOverlay": "",
-"Player": "",
 "PlayerModule": "",
 "PlayerModuleDemo": "",
 "PlayerModuleInput": "",
@@ -467,7 +455,7 @@ search_in_file_extensions=PoolStringArray( "gd", "gdh", "shader", "cs" )
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Godot-Utilities/plugin.cfg", "res://addons/Mono-Build-Toggler/plugin.cfg", "res://addons/SingletonScriptsShortcut/plugin.cfg", "res://addons/Todo_Manager/plugin.cfg", "res://addons/godot-notes/plugin.cfg", "res://addons/godot_sfxr/plugin.cfg", "res://addons/hyperlog/plugin.cfg", "res://addons/launchy/plugin.cfg", "res://addons/project-statistics/plugin.cfg", "res://addons/todot/plugin.cfg", "res://addons/wakatime/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Godot-Utilities/plugin.cfg", "res://addons/Mono-Build-Toggler/plugin.cfg", "res://addons/SingletonScriptsShortcut/plugin.cfg", "res://addons/Todo_Manager/plugin.cfg", "res://addons/UndoRedo-History-Viewer/plugin.cfg", "res://addons/godot-notes/plugin.cfg", "res://addons/godot-plugin-refresher/plugin.cfg", "res://addons/godot_sfxr/plugin.cfg", "res://addons/hyperlog/plugin.cfg", "res://addons/launchy/plugin.cfg", "res://addons/project-statistics/plugin.cfg", "res://addons/todot/plugin.cfg", "res://addons/wakatime/plugin.cfg" )
 
 [importer_defaults]
 
